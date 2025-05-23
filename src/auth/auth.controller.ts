@@ -2,11 +2,17 @@ import { Controller, Get, Query, Res, BadRequestException } from '@nestjs/common
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Autenticação')
-@Controller('')
+@Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+    private static readonly TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 7; // 7 days
+    private static readonly REFRESH_TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30; // 30 days
+    constructor(
+        private readonly authService: AuthService,
+        private readonly configService: ConfigService
+    ) { }
 
     @ApiOperation({ summary: 'Iniciar processo de autenticação com Spotify', description: 'Este endpoint redireciona o usuário para a página de autenticação do Spotify. O redirecionamento só funciona corretamente quando acessado via navegador. Ferramentas como Swagger ou Postman não seguem o redirecionamento automaticamente.' })
     @ApiResponse({
@@ -45,6 +51,22 @@ export class AuthController {
 
         const tokens = await this.authService.exchangeCodeForTokens(code);
 
-        res.json(tokens);
+        res.cookie('access_token', tokens.access_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: AuthController.TOKEN_EXPIRATION_TIME,
+            path: '/',
+        });
+        res.cookie('refresh_token', tokens.refresh_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: AuthController.REFRESH_TOKEN_EXPIRATION_TIME,
+            path: '/',
+        });
+
+        const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
+        res.redirect(frontendUrl);
     }
 }
