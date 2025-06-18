@@ -10,10 +10,10 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  // app.enableCors({
-  //   origin: '*',
-  //   credentials: true,
-  // });
+  app.enableCors({
+    origin: '*',
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Reverbrate API')
