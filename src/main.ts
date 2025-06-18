@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AuthModule);
@@ -10,10 +10,10 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  app.enableCors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-  });
+  // app.enableCors({
+  //   origin: '*',
+  //   credentials: true,
+  // });
 
   const config = new DocumentBuilder()
     .setTitle('Reverbrate API')
@@ -23,9 +23,9 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('docs', app, document);
 
-  const port = configService.get<number>('BACKEND_PORT') || 3002;
+  const port = configService.get<number>('BACKEND_PORT') || 5000;
   await app.listen(port, '0.0.0.0');
 }
 bootstrap();

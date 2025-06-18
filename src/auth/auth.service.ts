@@ -1,42 +1,56 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, HttpException, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
-import * as qs from 'qs';
+import SpotifyWebApi from 'spotify-web-api-node';
+import crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
-    private readonly clientId = process.env.SPOTIFY_CLIENT_ID;
-    private readonly clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-    private readonly redirectUri = process.env.SPOTIFY_REDIRECT_URI;
+    private spotifyApi: SpotifyWebApi;
 
-    constructor(private readonly http: HttpService) { }
+    constructor(private readonly http: HttpService) {
+        this.spotifyApi = new SpotifyWebApi({
+            clientId: process.env.SPOTIFY_CLIENT_ID!,
+            clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
+            redirectUri: process.env.SPOTIFY_REDIRECT_URI!,
+        });
+    }
 
     getSpotifyAuthUrl(): string {
-        const scope = 'user-read-email user-top-read';
-        const query = qs.stringify({
-            response_type: 'code',
-            client_id: this.clientId,
-            scope,
-            redirect_uri: this.redirectUri,
-        });
-        return `https://accounts.spotify.com/authorize?${query}`;
+        const scope = ['streaming', 'user-read-email', 'user-top-read'];
+        const state = crypto.randomBytes(16).toString('hex');
+
+        return this.spotifyApi.createAuthorizeURL(scope, state);
+    }
+
+    getAccessToken() {
+        return this.spotifyApi.getAccessToken();
     }
 
     async exchangeCodeForTokens(code: string) {
-        const body = qs.stringify({
-            grant_type: 'authorization_code',
-            code,
-            redirect_uri: this.redirectUri,
-            client_id: this.clientId,
-            client_secret: this.clientSecret,
-        });
+        const data = await this.spotifyApi.authorizationCodeGrant(code);
 
-        const response = await firstValueFrom(
-            this.http.post('https://accounts.spotify.com/api/token', body, {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            }),
-        );
+        this.spotifyApi.setAccessToken(data.body.access_token);
+        this.spotifyApi.setRefreshToken(data.body.refresh_token);
 
-        return response.data;
+        return {
+            access_token: data.body.access_token,
+            refresh_token: data.body.refresh_token,
+            expires_in: data.body.expires_in
+        };
+    }
+
+    async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string, refreshToken: string, expiresIn: number }> {
+        this.spotifyApi.setRefreshToken(refreshToken);
+        const data = await this.spotifyApi.refreshAccessToken();
+
+        if (!data.body.refresh_token) {
+            throw new HttpException('Refresh Token Expired', HttpStatus.UNAUTHORIZED);
+        }
+
+        return {
+            accessToken: data.body['access_token'],
+            refreshToken: data.body['refresh_token'],
+            expiresIn: data.body['expires_in'],
+        };
     }
 }
