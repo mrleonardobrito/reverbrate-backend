@@ -69,4 +69,32 @@ export class AuthController {
         const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
         res.redirect(frontendUrl);
     }
+
+    @Get('refresh')
+    async refreshToken(@Query('refresh_token') refreshToken: string, @Res() res: Response) {
+        if (!refreshToken) throw new BadRequestException('Missing refresh token');
+        const tokens = await this.authService.refreshAccessToken(refreshToken);
+        res.cookie('access_token', tokens.accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: AuthController.TOKEN_EXPIRATION_TIME,
+            path: '/',
+        });
+        res.cookie('refresh_token', tokens.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: AuthController.REFRESH_TOKEN_EXPIRATION_TIME,
+            path: '/',
+        });
+        const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
+        res.redirect(frontendUrl);
+    }
+
+    @Get('token')
+    async token(@Res() res: Response) {
+        const accessToken = this.authService.getAccessToken();
+        res.json({ access_token: accessToken });
+    }
 }
