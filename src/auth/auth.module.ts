@@ -2,11 +2,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { HttpModule } from '@nestjs/axios';
+import { SpotifyModule } from '../common/http/spotify/spotify.module';
+import { AuthGuard } from './guards/auth.guard';
+import { SpotifyService } from 'src/common/http/spotify/spotify.service';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), HttpModule],
+  imports: [ConfigModule, SpotifyModule],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, SpotifyService, AuthGuard],
+  exports: [AuthService, AuthGuard],
 })
 export class AuthModule { }

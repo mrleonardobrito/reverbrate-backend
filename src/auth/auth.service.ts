@@ -1,18 +1,14 @@
 import { HttpStatus, HttpException, Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import SpotifyWebApi from 'spotify-web-api-node';
 import crypto from 'crypto';
+import { SpotifyService } from 'src/common/http/spotify/spotify.service';
+import SpotifyWebApi from 'spotify-web-api-node';
 
 @Injectable()
 export class AuthService {
     private spotifyApi: SpotifyWebApi;
 
-    constructor(private readonly http: HttpService) {
-        this.spotifyApi = new SpotifyWebApi({
-            clientId: process.env.SPOTIFY_CLIENT_ID!,
-            clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
-            redirectUri: process.env.SPOTIFY_REDIRECT_URI!,
-        });
+    constructor(private readonly http: SpotifyService) {
+        this.spotifyApi = this.http.spotify;
     }
 
     getSpotifyAuthUrl(): string {
@@ -20,10 +16,6 @@ export class AuthService {
         const state = crypto.randomBytes(16).toString('hex');
 
         return this.spotifyApi.createAuthorizeURL(scope, state);
-    }
-
-    getAccessToken() {
-        return this.spotifyApi.getAccessToken();
     }
 
     async exchangeCodeForTokens(code: string) {
