@@ -1,0 +1,1 @@
+export const SPOTIFY_API_CLIENT = 'SpotifyApiClient';
