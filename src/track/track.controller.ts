@@ -1,14 +1,17 @@
-import { Controller, Get, Query, HttpStatus, HttpException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Query, HttpStatus, HttpException, BadRequestException, UseGuards } from '@nestjs/common';
 import { TrackService } from './track.service';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaginatedTrackResponseDto } from 'src/track/dto/paginated-response-track.dto';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 
 @ApiTags('tracks')
 @Controller('tracks')
+@UseGuards(AuthGuard)
 export class TracksController {
     constructor(private readonly trackService: TrackService) { }
 
     @Get('/search')
+    @ApiCookieAuth()
     @ApiOperation({ summary: 'Search for tracks on the Spotify API by name' })
     @ApiQuery({
         name: 'name',
