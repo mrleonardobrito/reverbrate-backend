@@ -3,20 +3,20 @@ export class Review {
     private readonly _userId: string;
     private readonly _trackId: string;
     private readonly _rating: number;
-    private readonly _comment: string;
-    private readonly _createdAt?: Date;
-    private readonly _updatedAt?: Date;
+    private readonly _comment?: string;
+    private readonly _createdAt: Date;
+    private readonly _updatedAt: Date;
     private readonly _deletedAt?: Date;
 
-    constructor(id: string, userId: string, trackId: string, rating: number, comment: string, createdAt?: Date, updatedAt?: Date, deletedAt?: Date) {
+    constructor(id: string, userId: string, trackId: string, rating: number, createdAt: Date, updatedAt: Date, deletedAt?: Date, comment?: string) {
         this._id = id;
         this._userId = userId;
         this._trackId = trackId;
         this._rating = rating;
-        this._comment = comment;
         this._createdAt = createdAt;
         this._updatedAt = updatedAt;
         this._deletedAt = deletedAt;
+        this._comment = comment;
     }
 
     get id() {
@@ -56,20 +56,20 @@ export class Review {
         userId: string,
         trackId: string,
         rating: number,
-        comment: string,
-        createdAt?: Date,
-        updatedAt?: Date,
+        createdAt: Date,
+        updatedAt: Date,
         deletedAt?: Date,
+        comment?: string,
     }) {
         return new Review(
             props.id,
             props.userId,
             props.trackId,
             props.rating,
-            props.comment,
             props.createdAt,
             props.updatedAt,
             props.deletedAt,
+            props.comment,
         );
     }
 }

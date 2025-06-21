@@ -4,7 +4,7 @@ import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiCookieAuth } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 
-@ApiTags('Autenticação')
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
     constructor(

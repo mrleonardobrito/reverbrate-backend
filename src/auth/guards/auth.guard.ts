@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
 import { AuthService } from '../auth.service';
-import { SpotifyService } from '../../common/http/spotify/spotify.service';
+import { SpotifyService } from 'src/common/http/spotify/spotify.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

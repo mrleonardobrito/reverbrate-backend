@@ -1,5 +1,5 @@
-import { Track } from '../entities/track';
+import { Track } from "../entities/track.entity";
 
 export interface TrackRepository {
-    findById(id: string): Promise<Track>;
+    findById(id: string): Promise<Track | null>;
 }

@@ -26,14 +26,6 @@ export class SpotifyRequestInterceptor implements NestInterceptor {
                         `Spotify API Request - Method: ${method} | URL: ${url} | Duration: ${duration}ms`
                     );
                 },
-                error: (error) => {
-                    const endTime = Date.now();
-                    const duration = endTime - startTime;
-
-                    this.logger.error(
-                        `Spotify API Request Failed - Method: ${method} | URL: ${url} | Duration: ${duration}ms | Error: ${error.message}`
-                    );
-                }
             })
         );
     }
