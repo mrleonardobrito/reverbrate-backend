@@ -1,5 +1,4 @@
 import { Review } from "../entities/review";
-import { Review as PrismaReview } from "@prisma/client";
 import { ReviewDto } from "../dtos/review.dto";
 
 export class ReviewMapper {
@@ -12,7 +11,7 @@ export class ReviewMapper {
         };
     }
 
-    static toDomain(review: PrismaReview): Review {
+    static toDomain(review: any): Review {
         return Review.create({
             id: review.id,
             userId: review.userId,
