@@ -6,6 +6,8 @@ import { CreateReviewDto } from "../dtos/create-review.dto";
 import { ReviewMapper } from "../mappers/review.mapper";
 import { Track } from "src/tracks/entities/track.entity";
 import { UpdateReviewDto } from "../dtos/update-review.dto";
+import { PaginatedRequest } from "src/common/http/dtos/paginated-request.dto";
+import { PaginatedResponse } from "src/common/http/dtos/paginated-response.dto";
 
 @Injectable()
 export class PrismaReviewRepository implements ReviewRepository {
@@ -33,6 +35,36 @@ export class PrismaReviewRepository implements ReviewRepository {
         });
 
         return reviews.map(review => ReviewMapper.toDomain(review));
+    }
+
+    async findAll(userId: string, query: PaginatedRequest): Promise<PaginatedResponse<Review>> {
+        const reviews = await this.prisma.review.findMany({
+            where: {
+                userId: userId,
+                deletedAt: null,
+            },
+            skip: query.offset,
+            take: query.limit,
+            select: {
+                id: true,
+                userId: true,
+                trackId: true,
+                rate: true,
+                comment: true,
+                createdAt: true,
+                updatedAt: true,
+                deletedAt: true
+            }
+        });
+
+        return {
+            data: reviews.map(review => ReviewMapper.toDomain(review)),
+            total: reviews.length,
+            limit: query.limit,
+            next: null,
+            offset: query.offset,
+            previous: null,
+        };
     }
 
     async create(userId: string, reviewDto: CreateReviewDto, track: Track): Promise<Review> {

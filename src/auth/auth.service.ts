@@ -32,6 +32,10 @@ export class AuthService {
         };
     }
 
+    async getToken() {
+        return this.spotifyApi.getAccessToken();
+    }
+
     async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string, refreshToken: string, expiresIn: number }> {
         this.spotifyApi.setRefreshToken(refreshToken);
         const data = await this.spotifyApi.refreshAccessToken();
@@ -39,7 +43,7 @@ export class AuthService {
         if (!data.body.refresh_token) {
             throw new HttpException('Refresh Token Expired', HttpStatus.UNAUTHORIZED);
         }
-
+        this.spotifyApi.setAccessToken(data.body.access_token);
         return {
             accessToken: data.body['access_token'],
             refreshToken: data.body['refresh_token'],

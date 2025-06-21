@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query, UseGuards, ValidationPipe } from "@nestjs/common";
 import { ReviewsService } from "./reviews.service";
 import { Review, User } from "@prisma/client";
 import { ApiBody, ApiCookieAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
@@ -23,6 +23,14 @@ export class ReviewsController {
     @ApiBody({ type: CreateReviewDto })
     async createReview(@CurrentUser() user: User, @Body() review: CreateReviewDto): Promise<CreateReviewResponseDto> {
         return await this.reviewsService.create(user.id, review);
+    }
+
+    @Get()
+    @ApiOperation({ summary: 'Get all reviews' })
+    @ApiQuery({ type: PaginatedRequest })
+    @ApiResponse({ type: PaginatedResponse<ReviewResumedDto> })
+    async getAllReviews(@CurrentUser() user: User, @Query() query: PaginatedRequest): Promise<PaginatedResponse<ReviewResumedDto>> {
+        return await this.reviewsService.getAllReviews(user.id, query);
     }
 
     @Get(':track_id')

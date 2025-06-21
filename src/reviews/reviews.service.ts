@@ -46,6 +46,26 @@ export class ReviewsService {
         };
     }
 
+    async getAllReviews(userId: string, query: PaginatedRequest): Promise<PaginatedResponse<ReviewResumedDto>> {
+        const reviews = await this.reviewRepository.findAll(userId, query);
+        const tracks = await this.trackRepository.findManyByIds(reviews.data.map(review => review.trackId));
+        const reviewsWithTrackInfo = reviews.data
+            .filter(review => tracks.some(track => track.id === review.trackId))
+            .map(review => ({
+                id: review.id,
+                review: ReviewMapper.toDto(review),
+                track_info: TrackMapper.toResumedDto(tracks.find(track => track.id === review.trackId)!)
+            }));
+        return {
+            data: reviewsWithTrackInfo,
+            limit: reviews.limit,
+            next: reviews.next,
+            offset: reviews.offset,
+            previous: reviews.previous,
+            total: reviews.total,
+        };
+    }
+
     async delete(userId: string, id: string): Promise<void> {
         const review = await this.reviewRepository.delete(userId, id);
         if (!review) {

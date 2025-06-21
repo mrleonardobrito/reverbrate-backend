@@ -102,4 +102,10 @@ export class AuthController {
         const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
         res.redirect(frontendUrl);
     }
+
+    @Get('token')
+    async getToken(@Res() res: Response) {
+        const token = await this.authService.getToken();
+        res.json({ token });
+    }
 }
