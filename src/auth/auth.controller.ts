@@ -1,14 +1,12 @@
 import { Controller, Get, Query, Res, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiCookieAuth } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 
-@ApiTags('Autenticação')
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-    private static readonly TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 7; // 7 days
-    private static readonly REFRESH_TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30; // 30 days
     constructor(
         private readonly authService: AuthService,
         private readonly configService: ConfigService
@@ -38,7 +36,7 @@ export class AuthController {
     })
     @ApiResponse({
         status: 302,
-        description: 'Redireciona para o frontend com os tokens de acesso'
+        description: 'Redireciona para o frontend com os cookies de autenticação setados'
     })
     @ApiResponse({
         status: 400,
@@ -55,14 +53,14 @@ export class AuthController {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: AuthController.TOKEN_EXPIRATION_TIME,
+            maxAge: this.configService.get<number>('cookies.accessToken.maxAge'),
             path: '/',
         });
         res.cookie('refresh_token', tokens.refresh_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: AuthController.REFRESH_TOKEN_EXPIRATION_TIME,
+            maxAge: this.configService.get<number>('cookies.refreshToken.maxAge'),
             path: '/',
         });
 
@@ -70,6 +68,19 @@ export class AuthController {
         res.redirect(frontendUrl);
     }
 
+    @ApiOperation({
+        summary: 'Renovar token de acesso',
+        description: 'Renova o token de acesso usando o refresh token. Esta rota é chamada automaticamente pelo guard quando necessário.'
+    })
+    @ApiQuery({
+        name: 'refresh_token',
+        required: true,
+        description: 'Token de renovação'
+    })
+    @ApiResponse({
+        status: 302,
+        description: 'Redireciona para o frontend com os novos cookies de autenticação'
+    })
     @Get('refresh')
     async refreshToken(@Query('refresh_token') refreshToken: string, @Res() res: Response) {
         if (!refreshToken) throw new BadRequestException('Missing refresh token');
@@ -78,23 +89,17 @@ export class AuthController {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: AuthController.TOKEN_EXPIRATION_TIME,
+            maxAge: this.configService.get<number>('cookies.accessToken.maxAge'),
             path: '/',
         });
         res.cookie('refresh_token', tokens.refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: AuthController.REFRESH_TOKEN_EXPIRATION_TIME,
+            maxAge: this.configService.get<number>('cookies.refreshToken.maxAge'),
             path: '/',
         });
         const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
         res.redirect(frontendUrl);
-    }
-
-    @Get('token')
-    async token(@Res() res: Response) {
-        const accessToken = this.authService.getAccessToken();
-        res.json({ access_token: accessToken });
     }
 }

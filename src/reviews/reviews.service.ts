@@ -1,31 +1,27 @@
-import { HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateReviewDto } from './dtos/create-review.dto';
-import { UpdateReviewDto } from './dtos/update-review.dto';
-import { ReviewRepository } from './interfaces/review-repository.interface';
-import { TrackRepository } from 'src/tracks/interfaces/track-repository.interface';
-import { SpotifyService } from 'src/common/http/spotify/spotify.service';
+import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { ReviewRepository } from "./interfaces/review-repository.interface";
+import { CreateReviewDto } from "./dtos/create-review.dto";
+import { ReviewMapper } from "./mappers/review.mapper";
+import { ReviewDto } from "./dtos/review.dto";
+import { TrackRepository } from "src/tracks/interfaces/track-repository.interface";
 
 @Injectable()
 export class ReviewsService {
     constructor(
         @Inject('ReviewRepository')
-        private reviewRepository: ReviewRepository,
+        private readonly reviewRepository: ReviewRepository,
         @Inject('TrackRepository')
-        private trackRepository: TrackRepository,
+        private readonly trackRepository: TrackRepository,
     ) { }
 
-    async findOne(id: string, userId: string) {
-        const review = await this.reviewRepository.findOne(id, userId);
-        if (!review) {
-            throw new HttpException('Review not found', HttpStatus.NOT_FOUND);
+    async create(userId: string, review: CreateReviewDto): Promise<{ review: ReviewDto, track_id: string }> {
+        const track = await this.trackRepository.findById(review.track_id);
+        if (!track) {
+            throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
         }
-        return review;
+        return {
+            review: ReviewMapper.toDto(await this.reviewRepository.create(userId, review, track)),
+            track_id: review.track_id
+        };
     }
-
-    // async update(id: string, userId: string, updateReviewDto: UpdateReviewDto) {
-    // }
-
-    // async remove(id: string, userId: string) {
-    // }
-} 
+}   

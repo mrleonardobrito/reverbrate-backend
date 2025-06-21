@@ -14,20 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String    @id @default(dbgenerated("generate_alphanumeric_id()")) @db.VarChar(5)
-  name      String    @db.VarChar(100)
-  email     String    @unique @db.VarChar(150)
-  imageUrl  String?   @map("image_url") @db.Text
-  isPrivate Boolean   @default(false) @map("is_private")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  reviews   Review[]
-
-  @@map("users")
-}
-
 model Track {
   id        String    @id @db.VarChar(50)
   isrcId    String?   @map("isrc_id") @db.VarChar(20)
@@ -45,18 +31,15 @@ model Track {
 
 model Review {
   id        String    @id @default(uuid())
-  userId    String    @map("user_id") @db.VarChar(5)
+  userId    String    @map("user_id") @db.VarChar(50)
   trackId   String    @map("track_id") @db.VarChar(50)
   rate      Int       @db.Integer
   comment   String?   @db.Text
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   track     Track     @relation(fields: [trackId], references: [id], onDelete: Cascade)
 
   @@unique([userId, trackId])
-  @@index([userId])
-  @@index([trackId])
   @@map("reviews")
 }

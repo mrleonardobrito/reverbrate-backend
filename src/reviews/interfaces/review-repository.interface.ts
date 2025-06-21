@@ -1,11 +1,8 @@
-import { Review } from "@prisma/client";
 import { CreateReviewDto } from "../dtos/create-review.dto";
-import { UpdateReviewDto } from "../dtos/update-review.dto";
+import { Review } from "../entities/review";
+import { Track } from "src/tracks/entities/track.entity";
 
 export interface ReviewRepository {
-    // create(userId: string, createReviewDto: CreateReviewDto): Promise<Review>;
-    // findAll(userId: string, limit: number, offset: number, trackId?: string): Promise<Review[]>;
-    findOne(id: string, userId: string): Promise<Review | null>;
-    // update(id: string, userId: string, updateReviewDto: UpdateReviewDto): Promise<Review>;
-    // remove(id: string, userId: string): Promise<void>;
-}
+    findManyByUserAndTracks(userId: string, trackIds: string[]): Promise<Review[]>;
+    create(userId: string, reviewDto: CreateReviewDto, track: Track): Promise<Review>;
+} 
