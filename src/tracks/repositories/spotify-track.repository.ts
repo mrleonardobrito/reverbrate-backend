@@ -13,10 +13,19 @@ export class SpotifyTrackRepository implements TrackRepository {
     }
 
     async findById(id: string): Promise<Track | null> {
-        const track = await this.spotify.getTrack(id);
-        if (!track.body) {
-            return null;
+        try {
+            const track = await this.spotify.getTrack(id);
+            return SpotifyTrackMapper.toDomain(track.body);
+        } catch (error) {
+            if (error.statusCode === 404) {
+                return null;
+            }
+            throw error;
         }
-        return SpotifyTrackMapper.toDomain(track.body);
+    }
+
+    async findManyByIds(ids: string[]): Promise<Track[]> {
+        const tracks = await this.spotify.getTracks(ids);
+        return tracks.body.tracks.map(track => SpotifyTrackMapper.toDomain(track));
     }
 }

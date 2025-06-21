@@ -1,6 +1,6 @@
 import { Review } from "../entities/review";
 import { Review as PrismaReview } from "@prisma/client";
-import { ReviewDto } from "../dtos/review.dto";
+import { ReviewDto, ReviewResumedDto } from "../dtos/review.dto";
 
 export class ReviewMapper {
     static toDto(review: Review): ReviewDto {
@@ -11,7 +11,6 @@ export class ReviewMapper {
             updated_at: review.updatedAt,
         };
     }
-
     static toDomain(review: PrismaReview): Review {
         return Review.create({
             id: review.id,

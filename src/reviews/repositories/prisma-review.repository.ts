@@ -5,6 +5,9 @@ import { Review } from "../entities/review";
 import { CreateReviewDto } from "../dtos/create-review.dto";
 import { ReviewMapper } from "../mappers/review.mapper";
 import { Track } from "src/tracks/entities/track.entity";
+import { UpdateReviewDto } from "../dtos/update-review.dto";
+import { PaginatedRequest } from "src/common/http/dtos/paginated-request.dto";
+import { PaginatedResponse } from "src/common/http/dtos/paginated-response.dto";
 
 @Injectable()
 export class PrismaReviewRepository implements ReviewRepository {
@@ -34,10 +37,41 @@ export class PrismaReviewRepository implements ReviewRepository {
         return reviews.map(review => ReviewMapper.toDomain(review));
     }
 
+    async findAll(userId: string, query: PaginatedRequest): Promise<PaginatedResponse<Review>> {
+        const reviews = await this.prisma.review.findMany({
+            where: {
+                userId: userId,
+                deletedAt: null,
+            },
+            skip: query.offset,
+            take: query.limit,
+            select: {
+                id: true,
+                userId: true,
+                trackId: true,
+                rate: true,
+                comment: true,
+                createdAt: true,
+                updatedAt: true,
+                deletedAt: true
+            }
+        });
+
+        return {
+            data: reviews.map(review => ReviewMapper.toDomain(review)),
+            total: reviews.length,
+            limit: query.limit,
+            next: null,
+            offset: query.offset,
+            previous: null,
+        };
+    }
+
     async create(userId: string, reviewDto: CreateReviewDto, track: Track): Promise<Review> {
         const reviewedTrack = await this.prisma.track.upsert({
             where: {
-                id: track.id
+                id: track.id,
+                deletedAt: null
             },
             update: {},
             create: {
@@ -54,7 +88,8 @@ export class PrismaReviewRepository implements ReviewRepository {
                 userId_trackId: {
                     userId: userId,
                     trackId: reviewedTrack.id
-                }
+                },
+                deletedAt: null
             },
             update: {
                 rate: reviewDto.review.rate,
@@ -66,6 +101,35 @@ export class PrismaReviewRepository implements ReviewRepository {
                 trackId: reviewedTrack.id,
                 rate: reviewDto.review.rate,
                 comment: reviewDto.review.comment
+            }
+        });
+
+        return ReviewMapper.toDomain(review);
+    }
+
+    async findByTrackId(userId: string, trackId: string): Promise<Review | null> {
+        const review = await this.prisma.review.findUnique({
+            where: {
+                userId_trackId: {
+                    userId: userId,
+                    trackId: trackId
+                },
+                deletedAt: null
+            }
+        });
+
+        if (!review) {
+            return null;
+        }
+
+        return ReviewMapper.toDomain(review);
+    }
+
+    async delete(userId: string, id: string): Promise<Review> {
+        const review = await this.prisma.review.update({
+            where: { id },
+            data: {
+                deletedAt: new Date()
             }
         });
 
