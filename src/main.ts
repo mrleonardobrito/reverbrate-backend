@@ -17,7 +17,6 @@ async function bootstrap() {
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-
   const config = new DocumentBuilder()
     .setTitle('Reverbrate API')
     .setDescription('API do projeto Reverbrate')

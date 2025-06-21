@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ReviewDto } from "./Review.dto";
+import { ReviewDto } from "../../reviews/dtos/review.dto";
 
-export class TrackResponseDto {
+export class TrackDto {
     @ApiProperty({
         description: 'The unique identifier of the track',
         example: '6cTzJ0yC0K8c7n8X9c0K8c',
@@ -37,10 +37,4 @@ export class TrackResponseDto {
         example: 'https://example.com/covers/bohemian-rhapsody.jpg',
     })
     cover: string;
-
-    @ApiProperty({
-        description: 'Review details for the track, including a rate and comment',
-        type: () => ReviewDto,
-    })
-    review: ReviewDto;
 }

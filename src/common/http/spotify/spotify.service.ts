@@ -10,6 +10,7 @@ export class SpotifyService {
         this._spotify = new SpotifyWebApi({
             clientId: config.get<string>('spotify.clientId'),
             clientSecret: config.get<string>('spotify.clientSecret'),
+            redirectUri: config.get<string>('spotify.redirectUri'),
         });
     }
 

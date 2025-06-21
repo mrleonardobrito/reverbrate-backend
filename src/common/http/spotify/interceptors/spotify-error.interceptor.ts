@@ -19,16 +19,11 @@ export class SpotifyErrorInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         return next.handle().pipe(
             catchError((error) => {
-                this.logger.error(`Spotify API Error: ${error.message}`);
-
                 if (this.isSpotifyError(error)) {
+                    this.logger.error(`Spotify API Error: ${error.body.error.message}`);
                     return throwError(() => this.handleSpotifyError(error));
                 }
-
-                return throwError(() => new HttpException(
-                    'Internal error in Spotify service',
-                    HttpStatus.INTERNAL_SERVER_ERROR
-                ));
+                return throwError(() => error);
             })
         );
     }

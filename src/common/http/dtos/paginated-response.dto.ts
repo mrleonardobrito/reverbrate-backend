@@ -1,10 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TrackResponseDto } from './track-response.dto';
 
-export class PaginatedTrackResponseDto {
-  @ApiProperty()
-  href: string;
-
+export class PaginatedResponse<T> {
   @ApiProperty()
   limit: number;
 
@@ -20,6 +16,6 @@ export class PaginatedTrackResponseDto {
   @ApiProperty()
   total: number;
 
-  @ApiProperty({ type: [TrackResponseDto] })
-  items: TrackResponseDto[];
+  @ApiProperty({ isArray: true })
+  data: T[];
 }

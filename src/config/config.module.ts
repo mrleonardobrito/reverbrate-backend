@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import configuration from './configuration';
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 @Module({
     imports: [
@@ -16,6 +16,7 @@ import * as Joi from 'joi';
 
                 SPOTIFY_CLIENT_ID: Joi.string().required(),
                 SPOTIFY_CLIENT_SECRET: Joi.string().required(),
+                SPOTIFY_REDIRECT_URI: Joi.string().required().default('http://127.0.0.1:3001/auth/callback'),
 
                 DATABASE_URL: Joi.string().required(),
 
@@ -28,7 +29,6 @@ import * as Joi from 'joi';
             }),
             validationOptions: {
                 abortEarly: true,
-                allowUnknown: true,
             },
         }),
     ],

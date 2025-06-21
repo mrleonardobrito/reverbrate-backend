@@ -2,9 +2,21 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
-import { TracksModule } from './track/track.module';
+import { SearchModule } from './search/search.module';
+import configuration from './config/configuration';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
-    imports: [PrismaModule, AuthModule, ConfigModule, TracksModule],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            load: [configuration],
+            envFilePath: '.env',
+        }),
+        PrismaModule,
+        AuthModule,
+        SearchModule,
+        ReviewsModule
+    ],
 })
 export class AppModule { }
