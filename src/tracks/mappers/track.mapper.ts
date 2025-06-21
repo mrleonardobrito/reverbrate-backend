@@ -1,4 +1,4 @@
-import { TrackDto } from "../dtos/track-response.dto";
+import { TrackDto, TrackResumedDto } from "../dtos/track-response.dto";
 import { Track } from "../entities/track.entity";
 
 export class TrackMapper {
@@ -10,6 +10,16 @@ export class TrackMapper {
             cover: domain.image,
             type: 'track',
             uri: domain.uri,
+        };
+    }
+
+    static toResumedDto(domain: Track): TrackResumedDto {
+        return {
+            id: domain.id,
+            cover: domain.image,
+            name: domain.name,
+            artist: domain.artist,
+            isrc_id: domain.isrcId,
         };
     }
 }

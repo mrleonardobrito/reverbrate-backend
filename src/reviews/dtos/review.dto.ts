@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, Min, Max, IsNotEmpty, IsPositive, IsString, IsOptional, IsDate } from "class-validator";
+import { IsNumber, Min, Max, IsNotEmpty, IsPositive, IsString, IsOptional, IsDate, IsObject, IsUUID } from "class-validator";
+import { TrackResumedDto } from "src/tracks/dtos/track-response.dto";
 
 export class ReviewDto {
   @ApiProperty({
@@ -34,4 +35,31 @@ export class ReviewDto {
     example: '2025-06-20T15:00:00.000Z',
   })
   created_at: Date;
+}
+
+export class ReviewResumedDto {
+  @ApiProperty({
+    description: 'Review id',
+    example: '123',
+  })
+  @IsNotEmpty()
+  @IsString()
+  @IsUUID()
+  id: string;
+
+  @ApiProperty({
+    description: 'Track information',
+    type: TrackResumedDto,
+  })
+  @IsNotEmpty()
+  @IsString()
+  track_info: TrackResumedDto;
+
+  @ApiProperty({
+    description: 'Review',
+    type: ReviewDto,
+  })
+  @IsNotEmpty()
+  @IsObject()
+  review: ReviewDto;
 }
