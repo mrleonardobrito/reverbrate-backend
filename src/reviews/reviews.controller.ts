@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
 import { ReviewsService } from "./reviews.service";
-import { Review, User } from "@prisma/client";
 import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { CreateReviewDto } from "./dtos/create-review.dto";
 import { CurrentUser } from "src/auth/decorators/current-user";
 import { ReviewDto } from "./dtos/review.dto";
+import { User } from "src/users/entities/user.entity";
 import { AuthGuard } from "src/auth/guards/auth.guard";
 
 @Controller('reviews')
