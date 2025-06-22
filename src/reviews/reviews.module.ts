@@ -20,5 +20,6 @@ import { SpotifyTrackRepository } from 'src/tracks/repositories/spotify-track.re
             useClass: SpotifyTrackRepository
         },
     ],
+    exports: [ReviewsService],
 })
 export class ReviewsModule { } 
