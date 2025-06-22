@@ -106,6 +106,6 @@ export class AuthController {
     @Get('token')
     async getToken(@Res() res: Response) {
         const token = await this.authService.getToken();
-        res.json({ token });
+        res.json({ access_token: token });
     }
 }
