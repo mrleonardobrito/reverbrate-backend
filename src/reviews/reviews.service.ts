@@ -48,6 +48,16 @@ export class ReviewsService {
 
     async getAllReviews(userId: string, query: PaginatedRequest): Promise<PaginatedResponse<ReviewResumedDto>> {
         const reviews = await this.reviewRepository.findAll(userId, query);
+        if (!reviews.data) {
+            return {
+                data: [],
+                limit: reviews.limit,
+                next: reviews.next,
+                offset: reviews.offset,
+                previous: reviews.previous,
+                total: reviews.total, 
+            };
+        }
         const tracks = await this.trackRepository.findManyByIds(reviews.data.map(review => review.trackId));
         const reviewsWithTrackInfo = reviews.data
             .filter(review => tracks.some(track => track.id === review.trackId))
