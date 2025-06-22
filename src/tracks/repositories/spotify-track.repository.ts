@@ -25,6 +25,9 @@ export class SpotifyTrackRepository implements TrackRepository {
     }
 
     async findManyByIds(ids: string[]): Promise<Track[]> {
+        if(!ids || ids.length === 0){
+            return []
+        }
         const tracks = await this.spotify.getTracks(ids);
         return tracks.body.tracks.map(track => SpotifyTrackMapper.toDomain(track));
     }

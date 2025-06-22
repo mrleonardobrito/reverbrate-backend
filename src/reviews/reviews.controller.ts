@@ -10,6 +10,7 @@ import { UpdateReviewDto } from "./dtos/update-review.dto";
 import { ReviewResumedDto } from "./dtos/review.dto";
 import { PaginatedRequest } from "src/common/http/dtos/paginated-request.dto";
 import { PaginatedResponse } from "src/common/http/dtos/paginated-response.dto";
+import { User } from "generated/prisma";
 
 @ApiTags('Reviews')
 @ApiCookieAuth()
