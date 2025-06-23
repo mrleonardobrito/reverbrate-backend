@@ -50,16 +50,14 @@ export class AuthController {
         const tokens = await this.authService.exchangeCodeForTokens(code);
 
         res.cookie('access_token', tokens.access_token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.accessToken.maxAge'),
             path: '/',
         });
         res.cookie('refresh_token', tokens.refresh_token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.refreshToken.maxAge'),
             path: '/',
         });
@@ -86,16 +84,14 @@ export class AuthController {
         if (!refreshToken) throw new BadRequestException('Missing refresh token');
         const tokens = await this.authService.refreshAccessToken(refreshToken);
         res.cookie('access_token', tokens.accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.accessToken.maxAge'),
             path: '/',
         });
         res.cookie('refresh_token', tokens.refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.refreshToken.maxAge'),
             path: '/',
         });

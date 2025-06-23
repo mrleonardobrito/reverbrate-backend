@@ -73,7 +73,10 @@ export default () => ({
 
     security: {
         cors: {
-            origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
+            origin: process.env.CORS_ORIGIN?.split(',') || ['http://127.0.0.1:3000'],
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+            allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Requested-With'],
+            exposedHeaders: ['Set-Cookie'],
             credentials: true,
         },
         rateLimit: {
