@@ -54,12 +54,14 @@ export class AuthController {
             sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.accessToken.maxAge'),
             path: '/',
+            domain: this.configService.get<string>('COOKIE_DOMAIN'), // Domínio para os cookies em produção
         });
         res.cookie('refresh_token', tokens.refresh_token, {
             secure: true,
             sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.refreshToken.maxAge'),
             path: '/',
+            domain: this.configService.get<string>('COOKIE_DOMAIN'), // Domínio para os cookies em produção
         });
 
         const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
@@ -88,12 +90,14 @@ export class AuthController {
             sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.accessToken.maxAge'),
             path: '/',
+            domain: this.configService.get<string>('COOKIE_DOMAIN'), // Domínio para os cookies em produção
         });
         res.cookie('refresh_token', tokens.refreshToken, {
             secure: true,
             sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.refreshToken.maxAge'),
             path: '/',
+            domain: this.configService.get<string>('COOKIE_DOMAIN'), // Domínio para os cookies em produção
         });
         const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
         res.redirect(frontendUrl);
