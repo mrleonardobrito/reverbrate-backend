@@ -1,6 +1,6 @@
 import { Controller, Get, Query, Res, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Response } from 'express';
+import { CookieOptions, Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiCookieAuth } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 
@@ -49,20 +49,8 @@ export class AuthController {
 
         const tokens = await this.authService.exchangeCodeForTokens(code);
 
-        res.cookie('access_token', tokens.access_token, {
-            secure: true,
-            sameSite: 'none',
-            maxAge: this.configService.get<number>('cookies.accessToken.maxAge'),
-            path: '/',
-            domain: this.configService.get<string>('COOKIE_DOMAIN'), // Domínio para os cookies em produção
-        });
-        res.cookie('refresh_token', tokens.refresh_token, {
-            secure: true,
-            sameSite: 'none',
-            maxAge: this.configService.get<number>('cookies.refreshToken.maxAge'),
-            path: '/',
-            domain: this.configService.get<string>('COOKIE_DOMAIN'), // Domínio para os cookies em produção
-        });
+        res.cookie('access_token', tokens.access_token, this.configService.get<CookieOptions>('accessTokenCookie') as CookieOptions);
+        res.cookie('refresh_token', tokens.refresh_token, this.configService.get<CookieOptions>('refreshTokenCookie') as CookieOptions);
 
         const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
         res.redirect(frontendUrl);
@@ -85,20 +73,8 @@ export class AuthController {
     async refreshToken(@Query('refresh_token') refreshToken: string, @Res() res: Response) {
         if (!refreshToken) throw new BadRequestException('Missing refresh token');
         const tokens = await this.authService.refreshAccessToken(refreshToken);
-        res.cookie('access_token', tokens.accessToken, {
-            secure: true,
-            sameSite: 'none',
-            maxAge: this.configService.get<number>('cookies.accessToken.maxAge'),
-            path: '/',
-            domain: this.configService.get<string>('COOKIE_DOMAIN'), // Domínio para os cookies em produção
-        });
-        res.cookie('refresh_token', tokens.refreshToken, {
-            secure: true,
-            sameSite: 'none',
-            maxAge: this.configService.get<number>('cookies.refreshToken.maxAge'),
-            path: '/',
-            domain: this.configService.get<string>('COOKIE_DOMAIN'), // Domínio para os cookies em produção
-        });
+        res.cookie('access_token', tokens.accessToken, this.configService.get<CookieOptions>('accessTokenCookie') as CookieOptions);
+        res.cookie('refresh_token', tokens.refreshToken, this.configService.get<CookieOptions>('refreshTokenCookie') as CookieOptions);
         const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
         res.redirect(frontendUrl);
     }

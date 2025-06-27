@@ -83,5 +83,17 @@ export default () => ({
             windowMs: parseDuration(process.env.RATE_LIMIT_WINDOW_MS || '15m'),
             max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
         },
+        accessTokenCookie: {
+            domain: process.env.COOKIE_DOMAIN,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict' as const,
+            maxAge: parseDuration(process.env.JWT_EXPIRES_IN || '1h'),
+        },
+        refreshTokenCookie: {
+            domain: process.env.COOKIE_DOMAIN,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict' as const,
+            maxAge: parseDuration(process.env.JWT_REFRESH_EXPIRES_IN || '7d'),
+        },
     },
 }); 
