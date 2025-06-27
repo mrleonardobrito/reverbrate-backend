@@ -45,6 +45,9 @@ export class PrismaReviewRepository implements ReviewRepository {
             },
             skip: query.offset,
             take: query.limit,
+            orderBy: {
+                createdAt: 'desc'
+            },
             select: {
                 id: true,
                 userId: true,
