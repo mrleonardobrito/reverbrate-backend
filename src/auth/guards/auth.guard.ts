@@ -4,7 +4,7 @@ import { SpotifyService } from 'src/common/http/spotify/spotify.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-    constructor(private authService: AuthService, private spotifyService: SpotifyService) { }
+    constructor(private authService: AuthService) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
@@ -23,9 +23,9 @@ export class AuthGuard implements CanActivate {
     }
 
     private async validateAndSetUserInfo(accessToken: string, request: any): Promise<void> {
-        this.spotifyService.spotify.setAccessToken(accessToken);
-        const userInfo = await this.spotifyService.spotify.getMe();
-        request.user = userInfo.body;
+        const strategy = this.authService.getCurrentAuthStrategy();
+        const userInfo = await strategy.getProfile(accessToken);
+        request.user = userInfo;
     }
 
     private async handleTokenError(refreshToken: string, request: any): Promise<boolean> {
@@ -34,7 +34,7 @@ export class AuthGuard implements CanActivate {
         }
 
         try {
-            const tokens = await this.authService.refreshAccessToken(refreshToken);
+            const tokens = await this.authService.getCurrentAuthStrategy().refreshAccessToken(refreshToken);
             await this.validateAndSetUserInfo(tokens.accessToken, request);
             return true;
         } catch (refreshError) {

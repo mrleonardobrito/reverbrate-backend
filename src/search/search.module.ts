@@ -2,13 +2,12 @@ import { Module } from "@nestjs/common";
 import { SearchController } from "./search.controller";
 import { SearchService } from "./search.service";
 import { SpotifySearchRepository } from "./repositories/spotify-search.repository";
-import { SpotifyModule } from "../common/http/spotify/spotify.module";
 import { ReviewsModule } from "../reviews/reviews.module";
 import { AuthModule } from '../auth/auth.module';
 import { PrismaReviewRepository } from "src/reviews/repositories/prisma-review.repository";
 
 @Module({
-    imports: [SpotifyModule, ReviewsModule, AuthModule],
+    imports: [ReviewsModule, AuthModule],
     controllers: [SearchController],
     providers: [
         SearchService,

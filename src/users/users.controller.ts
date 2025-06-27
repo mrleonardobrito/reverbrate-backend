@@ -17,7 +17,6 @@ export class UsersController {
     @Get('current')
     @ApiCookieAuth()
     @ApiOperation({ summary: 'Get data from current user' })
-    @ApiQuery({ type: PaginatedRequest })
     @ApiResponse({ status: 200, description: 'Data from current user', type: CurrentUserResponseDto })
     @ApiResponse({ status: 401, description: 'Access token not found.' })
     async getCurrentUser(@CurrentUser() user: User, @Query() query: PaginatedRequest) {

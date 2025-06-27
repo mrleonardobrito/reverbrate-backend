@@ -3,10 +3,13 @@ import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiCookieAuth } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { AuthStrategy } from './interfaces/auth-strategy.interface';
+import { Token } from './decorators/token';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
+    private authStrategy: AuthStrategy;
     constructor(
         private readonly authService: AuthService,
         private readonly configService: ConfigService
@@ -17,9 +20,18 @@ export class AuthController {
         status: 302,
         description: 'Redireciona para a página de autenticação do Spotify'
     })
+    @ApiQuery({
+        name: 'strategy',
+        required: false,
+        description: 'Strategy to use for authentication',
+        type: String,
+        enum: ['spotify', 'youtube']
+    })
     @Get('login')
-    login(@Res() res: Response) {
-        const url = this.authService.getSpotifyAuthUrl();
+    login(@Res() res: Response, @Query('strategy') strategy?: string) {
+        this.authService.setCurrentAuthStrategy(strategy || 'spotify');
+        this.authStrategy = this.authService.getCurrentAuthStrategy();
+        const url = this.authStrategy.getAuthorizationUrl();
         res.status(302).redirect(url);
     }
 
@@ -47,19 +59,21 @@ export class AuthController {
         if (error) throw new BadRequestException(error);
         if (!code) throw new BadRequestException('Missing code');
 
-        const tokens = await this.authService.exchangeCodeForTokens(code);
+        const tokens = await this.authStrategy.exchangeCodeForTokens(code);
 
-        res.cookie('access_token', tokens.access_token, {
+        res.cookie('access_token', tokens.accessToken, {
             secure: true,
             sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.accessToken.maxAge'),
             path: '/',
+            domain: this.configService.get<string>('COOKIE_DOMAIN'),
         });
-        res.cookie('refresh_token', tokens.refresh_token, {
+        res.cookie('refresh_token', tokens.refreshToken, {
             secure: true,
             sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.refreshToken.maxAge'),
             path: '/',
+            domain: this.configService.get<string>('COOKIE_DOMAIN'),
         });
 
         const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
@@ -82,26 +96,27 @@ export class AuthController {
     @Get('refresh')
     async refreshToken(@Query('refresh_token') refreshToken: string, @Res() res: Response) {
         if (!refreshToken) throw new BadRequestException('Missing refresh token');
-        const tokens = await this.authService.refreshAccessToken(refreshToken);
+        const tokens = await this.authStrategy.refreshAccessToken(refreshToken);
         res.cookie('access_token', tokens.accessToken, {
             secure: true,
             sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.accessToken.maxAge'),
             path: '/',
+            domain: this.configService.get<string>('COOKIE_DOMAIN'),
         });
         res.cookie('refresh_token', tokens.refreshToken, {
             secure: true,
             sameSite: 'none',
             maxAge: this.configService.get<number>('cookies.refreshToken.maxAge'),
             path: '/',
+            domain: this.configService.get<string>('COOKIE_DOMAIN'),
         });
         const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
         res.redirect(frontendUrl);
     }
 
     @Get('token')
-    async getToken(@Res() res: Response) {
-        const token = await this.authService.getToken();
+    async getToken(@Token() token: string, @Res() res: Response) {
         res.json({ access_token: token });
     }
 }
