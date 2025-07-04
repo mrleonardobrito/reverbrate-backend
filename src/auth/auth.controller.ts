@@ -79,9 +79,11 @@ export class AuthController {
         res.redirect(frontendUrl);
     }
 
+
     @Get('token')
     async getToken(@Res() res: Response) {
         const token = await this.authService.getToken();
         res.json({ access_token: token });
     }
+
 }
