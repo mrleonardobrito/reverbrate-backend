@@ -1,6 +1,6 @@
 import { Artist } from 'src/artists/entities/artist.entity';
 
-export class ArtistMapper {
+export class SpotifyArtistMapper {
   static toDomain(artist: SpotifyApi.SingleArtistResponse): Artist {
     return Artist.create({
       id: artist.id,
