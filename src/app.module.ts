@@ -6,19 +6,21 @@ import { SearchModule } from './search/search.module';
 import configuration from './config/configuration';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UsersModule } from './users/users.module';
+import { ArtistsModule } from './artists/artists.module';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [configuration],
-            envFilePath: '.env',
-        }),
-        PrismaModule,
-        AuthModule,
-        SearchModule,
-        ReviewsModule,
-        UsersModule
-    ],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      envFilePath: '.env',
+    }),
+    PrismaModule,
+    AuthModule,
+    SearchModule,
+    ReviewsModule,
+    UsersModule,
+    ArtistsModule,
+  ],
 })
-export class AppModule { }
+export class AppModule {}
