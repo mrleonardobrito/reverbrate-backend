@@ -6,6 +6,7 @@ import { SearchModule } from './search/search.module';
 import configuration from './config/configuration';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UsersModule } from './users/users.module';
+import { AlbumsModule } from './albums/albums.module';
 
 @Module({
     imports: [
@@ -18,7 +19,8 @@ import { UsersModule } from './users/users.module';
         AuthModule,
         SearchModule,
         ReviewsModule,
-        UsersModule
+        UsersModule,
+        AlbumsModule
     ],
 })
 export class AppModule { }
