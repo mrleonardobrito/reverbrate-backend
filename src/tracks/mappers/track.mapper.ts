@@ -22,4 +22,20 @@ export class TrackMapper {
             isrc_id: domain.isrcId,
         };
     }
+
+     static toDomain(rawTrack: SpotifyApi.TrackObjectFull): Track {
+        const imageUrl = rawTrack.album?.images?.[0]?.url || '';
+        const artistName = rawTrack.artists?.[0]?.name || 'Unknown Artist';
+        const albumName = rawTrack.album?.name || 'Unknown Album';
+
+        return Track.create({
+            id: rawTrack.id,
+            name: rawTrack.name,
+            artist: artistName,
+            album: albumName,
+            image: imageUrl,
+            uri: rawTrack.uri,
+            isrcId: rawTrack.external_ids?.isrc ?? '',
+        });
+    }
 }

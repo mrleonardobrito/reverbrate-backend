@@ -2,9 +2,12 @@ import { Track } from "src/tracks/entities/track.entity";
 import { PaginatedResponse } from "../../dtos/paginated-response.dto";
 import { TrackDto } from "src/tracks/dtos/track-response.dto";
 import { TrackMapper } from "src/tracks/mappers/track.mapper";
+import { Artist } from "src/artists/entities/artist.entity";
+import { ArtistMapper } from "src/artists/mappers/artist.mapper";
+import { ArtistDto } from "src/artists/dtos/search-artist.dto";
 
-export class SpotifyTrackMapper {
-    static toDomain(rawTrack: SpotifyApi.TrackObjectFull): Track {
+export class SpotifyMapper {
+    static trackToDomain(rawTrack: SpotifyApi.TrackObjectFull): Track {
         return Track.create({
             id: rawTrack.id,
             name: rawTrack.name,
@@ -16,7 +19,16 @@ export class SpotifyTrackMapper {
         });
     }
 
-    static toPaginatedDto(response: SpotifyApi.PagingObject<SpotifyApi.TrackObjectFull> | undefined): PaginatedResponse<TrackDto> {
+    static artistToDomain(rawArtist: SpotifyApi.ArtistObjectFull): Artist {
+        return Artist.create({
+            id: rawArtist.id,
+            name: rawArtist.name,
+            uri: rawArtist.uri,
+            image: rawArtist.images[0].url
+        });
+    }
+
+    static toPaginatedTrackDto(response: SpotifyApi.PagingObject<SpotifyApi.TrackObjectFull> | undefined): PaginatedResponse<TrackDto> {
         if (!response) {
             return {
                 data: [],
@@ -29,7 +41,29 @@ export class SpotifyTrackMapper {
         }
 
         return {
-            data: response.items.map(track => TrackMapper.toDto(this.toDomain(track))),
+            data: response.items.map(track => TrackMapper.toDto(this.trackToDomain(track))),
+            total: response.total,
+            limit: response.limit,
+            next: response.next,
+            offset: response.offset,
+            previous: response.previous,
+        };
+    }
+
+    static toPaginatedArtistDto(response: SpotifyApi.PagingObject<SpotifyApi.ArtistObjectFull> | undefined): PaginatedResponse<ArtistDto> {
+        if (!response) {
+            return {
+                data: [],
+                total: 0,
+                limit: 0,
+                next: null,
+                offset: 0,
+                previous: null,
+            };
+        }
+
+        return {
+            data: response.items.map(artist => ArtistMapper.toDto(this.artistToDomain(artist))),
             total: response.total,
             limit: response.limit,
             next: response.next,
