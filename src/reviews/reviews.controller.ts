@@ -1,15 +1,17 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query, UseGuards, ValidationPipe } from "@nestjs/common";
 import { ReviewsService } from "./reviews.service";
+import { Review } from "@prisma/client";
 import { ApiBody, ApiCookieAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { CreateReviewDto } from "./dtos/create-review.dto";
 import { CurrentUser } from "src/auth/decorators/current-user";
 import { CreateReviewResponseDto } from "./dtos/create-review.dto";
 import { AuthGuard } from "src/auth/guards/auth.guard";
-import { User } from "src/users/entities/user.entity";
 import { UpdateReviewDto } from "./dtos/update-review.dto";
 import { ReviewResumedDto } from "./dtos/review.dto";
 import { PaginatedRequest } from "src/common/http/dtos/paginated-request.dto";
 import { PaginatedResponse } from "src/common/http/dtos/paginated-response.dto";
+import { User } from "src/users/entities/user.entity";
+
 
 @ApiTags('Reviews')
 @ApiCookieAuth()

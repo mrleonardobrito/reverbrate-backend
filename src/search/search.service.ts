@@ -1,9 +1,10 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { SearchResponse } from "./dtos/search-response.dto";
-import { SearchRequest } from "./dtos/search-request.dto";
-import { SearchRepository } from "./interfaces/search-repository.interface";
-import { ReviewRepository } from "../reviews/interfaces/review-repository.interface";
+import { Injectable, Inject } from "@nestjs/common";
+import { PaginatedResponse } from "src/common/http/dtos/paginated-response.dto";
+import { ReviewRepository } from "src/reviews/interfaces/review-repository.interface";
 import { ReviewMapper } from "src/reviews/mappers/review.mapper";
+import { SearchRequest } from "./dtos/search-request.dto";
+import { SearchResponse } from "./dtos/search-response.dto";
+import { SearchRepository } from "./repositories/spotify-search.repository";
 
 @Injectable()
 export class SearchService {
@@ -11,31 +12,83 @@ export class SearchService {
         @Inject('SearchRepository')
         private readonly searchRepository: SearchRepository,
         @Inject('ReviewRepository')
-        private readonly reviewRepository: ReviewRepository
+        private readonly reviewRepository: ReviewRepository,
     ) { }
 
-    async search(query: SearchRequest, userId?: string): Promise<SearchResponse> {
-        const searchResults = await this.searchRepository.search(query);
+    async search(query: SearchRequest, userId: string): Promise<SearchResponse> {
+        let searchResults: SearchResponse;
 
-        if (!userId || !searchResults.tracks) {
-            return searchResults;
+        if (query.type) {
+            switch (query.type) {
+                case 'artist': {
+                    const artists = await this.searchRepository.searchArtist(query);
+                    searchResults = {
+                        tracks: new PaginatedResponse(),
+                        artists: artists,
+                    };
+                    break;
+                }
+
+                case 'track': {
+                    const tracks = await this.searchRepository.searchTrack(query);
+                    searchResults = {
+                        tracks: tracks,
+                        artists: new PaginatedResponse(),
+                    };
+                    await this.searchReviews(searchResults, userId);
+                    break;
+                }
+
+                default: {
+                    const [artists, tracks] = await Promise.all([
+                        this.searchRepository.searchArtist(query),
+                        this.searchRepository.searchTrack(query),
+                    ]);
+
+                    searchResults = {
+                        tracks: tracks,
+                        artists: artists,
+                    };
+
+                    await this.searchReviews(searchResults, userId);
+                    break;
+                }
+            }
+        } else {
+            const [artists, tracks] = await Promise.all([
+                this.searchRepository.searchArtist(query),
+                this.searchRepository.searchTrack(query),
+            ]);
+
+            searchResults = {
+                tracks: tracks,
+                artists: artists,
+            };
+
+            await this.searchReviews(searchResults, userId);
         }
 
-        const trackIds = searchResults.tracks.data.map(track => track.id);
+        return searchResults;
+    }
+
+
+    private async searchReviews(
+        searchResults: SearchResponse,
+        userId: string,
+    ): Promise<void> {
+
+        const trackIds: string[] = searchResults.tracks.data.map((track) => track.id);
+
+        if (trackIds.length === 0) {
+            return;
+        }
 
         const userReviews = await this.reviewRepository.findManyByUserAndTracks(userId, trackIds);
+        const reviewsMap = new Map(userReviews.map((review) => [review.trackId, review]));
 
-        const reviewsMap = new Map(userReviews.map(review => [review.trackId, review]));
-
-        return {
-            ...searchResults,
-            tracks: {
-                ...searchResults.tracks,
-                data: searchResults.tracks.data.map(track => ({
-                    ...track,
-                    review: reviewsMap.get(track.id) ? ReviewMapper.toDto(reviewsMap.get(track.id)!) : null
-                }))
-            }
-        };
+        searchResults.tracks.data = searchResults.tracks.data.map((track) => ({
+            ...track,
+            review: reviewsMap.get(track.id) ? ReviewMapper.toDto(reviewsMap.get(track.id)!) : null,
+        }));
     }
 }

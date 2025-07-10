@@ -43,12 +43,11 @@ export class SearchRequest extends PaginatedRequest {
     @ApiProperty({
         required: false,
         description: 'The type of item to search for. Defaults to "track".',
-        enum: ['track', 'artist', 'album'],
-        default: 'track',
+        enum: ['track', 'artist', 'album']
     })
     @IsString()
     @IsOptional()
-    type: SearchType = 'track'; 
+    type: SearchType; 
 
     @ApiProperty({
         required: false,
