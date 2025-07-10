@@ -6,6 +6,8 @@ import { AddItemRequestDto, CreateListRequestDto, UpdateListRequestDto } from '.
 import { ListResponseDto } from './dto/list-response.dto';
 import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
+import { CurrentUser } from 'src/auth/decorators/current-user';
+import { User } from '@prisma/client';
 
 @Controller('lists')
 @ApiTags('Lists')
@@ -16,26 +18,26 @@ export class ListsController {
     @Post()
     @ApiBody({ type: CreateListRequestDto })
     @ApiResponse({ type: ListResponseDto })
-    async createList(@Body() createListDto: CreateListRequestDto) {
-        return this.listsService.createList(createListDto);
+    async createList(@Body() createListDto: CreateListRequestDto, @CurrentUser() user: User) {
+        return this.listsService.createList(createListDto, user.id);
     }
 
     @Get(':id')
     @ApiParam({ name: 'id', type: String, description: 'The id of the list' })
     @ApiResponse({ type: ListResponseDto })
-    async getList(@Param('id') id: string) {
-        return this.listsService.getList(id);
+    async getList(@Param('id') id: string, @CurrentUser() user: User) {
+        return this.listsService.getList(id, user.id);
     }
 
     @Patch(':id/items')
     @ApiParam({ name: 'id', type: String, description: 'The id of the list' })
     @ApiBody({ type: AddItemRequestDto })
     @ApiResponse({ type: ListResponseDto })
-    async addItemToList(@Param('id') id: string, @Body() addItemToListDto: AddItemRequestDto) {
+    async addItemToList(@Param('id') id: string, @Body() addItemToListDto: AddItemRequestDto, @CurrentUser() user: User) {
         if (addItemToListDto.operation === 'add') {
-            return this.listsService.addItemToList(id, addItemToListDto.item_id);
+            return this.listsService.addItemToList(id, addItemToListDto.item_id, user.id);
         } else if (addItemToListDto.operation === 'remove') {
-            return this.listsService.removeItemFromList(id, addItemToListDto.item_id);
+            return this.listsService.removeItemFromList(id, addItemToListDto.item_id, user.id);
         } else {
             throw new HttpException('Invalid operation', HttpStatus.BAD_REQUEST);
         }
@@ -45,20 +47,20 @@ export class ListsController {
     @ApiParam({ name: 'id', type: String, description: 'The id of the list' })
     @ApiBody({ type: UpdateListRequestDto })
     @ApiResponse({ type: ListResponseDto })
-    async updateList(@Param('id') id: string, @Body() updateListDto: UpdateListRequestDto) {
-        return this.listsService.updateList(id, updateListDto);
+    async updateList(@Param('id') id: string, @Body() updateListDto: UpdateListRequestDto, @CurrentUser() user: User) {
+        return this.listsService.updateList(id, updateListDto, user.id);
     }
 
     @Get()
     @ApiResponse({ type: PaginatedResponse<ListResponseDto> })
-    async getLists(@Query() paginatedRequest: PaginatedRequest) {
-        return this.listsService.getLists(paginatedRequest);
+    async getLists(@Query() paginatedRequest: PaginatedRequest, @CurrentUser() user: User) {
+        return this.listsService.getLists(paginatedRequest, user.id);
     }
 
     @Delete(':id')
     @ApiParam({ name: 'id', type: String, description: 'The id of the list' })
     @ApiResponse({ type: ListResponseDto })
-    async deleteList(@Param('id') id: string) {
-        return this.listsService.deleteList(id);
+    async deleteList(@Param('id') id: string, @CurrentUser() user: User) {
+        return this.listsService.deleteList(id, user.id);
     }
 }

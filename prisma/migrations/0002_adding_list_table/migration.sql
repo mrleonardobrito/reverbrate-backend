@@ -3,10 +3,12 @@ CREATE TABLE "lists" (
     "id" TEXT NOT NULL,
     "name" VARCHAR(200) NOT NULL,
     "type" "list_type" NOT NULL,
+    "user_id" VARCHAR(50) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
-    CONSTRAINT "lists_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "lists_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "lists_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 CREATE TABLE "list_items" (
     "id" TEXT NOT NULL,

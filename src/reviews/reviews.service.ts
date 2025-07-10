@@ -55,7 +55,7 @@ export class ReviewsService {
                 next: reviews.next,
                 offset: reviews.offset,
                 previous: reviews.previous,
-                total: reviews.total, 
+                total: reviews.total,
             };
         }
         const tracks = await this.trackRepository.findManyByIds(reviews.data.map(review => review.trackId));

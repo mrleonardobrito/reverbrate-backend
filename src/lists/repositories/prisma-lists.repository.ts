@@ -30,11 +30,12 @@ export class PrismaListsRepository implements ListRepository {
         this.albumRepository = albumsRepository;
     }
 
-    async create(list: CreateListRequestDto): Promise<List> {
+    async create(list: CreateListRequestDto, userId: string): Promise<List> {
         const prismaList = await this.prisma.list.create({
             data: {
                 name: list.name,
                 type: list.type,
+                userId: userId,
             },
         });
 

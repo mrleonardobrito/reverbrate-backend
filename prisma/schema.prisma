@@ -26,6 +26,7 @@ model User {
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
   reviews   Review[]
+  lists     List[]
 
   @@map("users")
 }
@@ -61,6 +62,8 @@ model List {
   updatedAt DateTime   @default(now()) @map("updated_at")
   deletedAt DateTime?  @map("deleted_at")
   items     ListItem[]
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String     @map("user_id") @db.VarChar(50)
 
   @@map("lists")
 }

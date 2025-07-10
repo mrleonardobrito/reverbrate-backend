@@ -7,12 +7,13 @@ import { ReviewsService } from "src/reviews/reviews.service";
 import { PaginatedRequest } from "src/common/http/dtos/paginated-request.dto";
 import { UserMapper } from "./mappers/user.mapper";
 import { User } from "./entities/user.entity";
+import { ListsService } from "src/lists/lists.service";
 
 @ApiTags('users')
 @Controller('users')
 @UseGuards(AuthGuard)
 export class UsersController {
-    constructor(private readonly reviewsService: ReviewsService) { }
+    constructor(private readonly reviewsService: ReviewsService, private readonly listsService: ListsService) { }
 
     @Get('current')
     @ApiCookieAuth()
@@ -22,7 +23,11 @@ export class UsersController {
     @ApiResponse({ status: 401, description: 'Access token not found.' })
     async getCurrentUser(@CurrentUser() user: User, @Query() query: PaginatedRequest) {
         const paginatedReviews = await this.reviewsService.getAllReviews(user.id, query);
-        UserMapper.toDTO(user)
-        return new CurrentUserResponseDto(user, paginatedReviews);
+        const paginatedLists = await this.listsService.getLists(query, user.id);
+        return {
+            user: UserMapper.toDTO(user),
+            reviews: paginatedReviews,
+            lists: paginatedLists,
+        };
     }
 }

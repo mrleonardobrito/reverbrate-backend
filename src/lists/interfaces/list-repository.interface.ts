@@ -4,12 +4,12 @@ import { PaginatedRequest } from "src/common/http/dtos/paginated-request.dto";
 import { PaginatedResponse } from "src/common/http/dtos/paginated-response.dto";
 
 export interface ListRepository {
-    create(list: CreateListRequestDto): Promise<List>;
-    findById(id: string): Promise<List | null>;
-    findAll(paginatedRequest: PaginatedRequest): Promise<PaginatedResponse<List>>;
-    update(listId: string, updateListDto: UpdateListRequestDto): Promise<List>;
-    addItem(listId: string, itemId: string): Promise<void>;
-    removeItem(listId: string, itemId: string): Promise<void>;
+    create(list: CreateListRequestDto, userId: string): Promise<List>;
+    findById(id: string, userId: string): Promise<List | null>;
+    findAll(paginatedRequest: PaginatedRequest, userId: string): Promise<PaginatedResponse<List>>;
+    update(listId: string, updateListDto: UpdateListRequestDto, userId: string): Promise<List>;
+    addItem(listId: string, itemId: string, userId: string): Promise<void>;
+    removeItem(listId: string, itemId: string, userId: string): Promise<void>;
     findItemById(itemType: ListType, itemId: string): Promise<ListItem | null>;
-    delete(id: string): Promise<void>;
+    delete(id: string, userId: string): Promise<void>;
 }

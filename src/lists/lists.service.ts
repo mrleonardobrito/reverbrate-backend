@@ -13,8 +13,8 @@ export class ListsService {
         private readonly listsRepository: ListRepository,
     ) { }
 
-    async createList(createListRequestDto: CreateListRequestDto): Promise<ListResponseDto> {
-        const list = await this.listsRepository.create(createListRequestDto);
+    async createList(createListRequestDto: CreateListRequestDto, userId: string): Promise<ListResponseDto> {
+        const list = await this.listsRepository.create(createListRequestDto, userId);
         return {
             id: list.id,
             name: list.name,
@@ -26,16 +26,16 @@ export class ListsService {
         }
     }
 
-    async getList(id: string): Promise<ListResponseDto> {
-        const list = await this.listsRepository.findById(id);
+    async getList(id: string, userId: string): Promise<ListResponseDto> {
+        const list = await this.listsRepository.findById(id, userId);
         if (!list) {
             throw new HttpException('List not found', HttpStatus.NOT_FOUND);
         }
         return ListMapper.toResponseDto(list);
     }
 
-    async addItemToList(listId: string, itemId: string): Promise<ListResponseDto> {
-        const list = await this.listsRepository.findById(listId);
+    async addItemToList(listId: string, itemId: string, userId: string): Promise<ListResponseDto> {
+        const list = await this.listsRepository.findById(listId, userId);
         if (!list) {
             throw new HttpException('List not found', HttpStatus.NOT_FOUND);
         }
@@ -43,41 +43,41 @@ export class ListsService {
         if (!item) {
             throw new HttpException('Item not found', HttpStatus.NOT_FOUND);
         }
-        await this.listsRepository.addItem(listId, itemId);
-        const updatedList = await this.listsRepository.findById(listId);
+        await this.listsRepository.addItem(listId, itemId, userId);
+        const updatedList = await this.listsRepository.findById(listId, userId);
         if (!updatedList) {
             throw new HttpException('List not found', HttpStatus.NOT_FOUND);
         }
         return ListMapper.toResponseDto(updatedList);
     }
 
-    async removeItemFromList(listId: string, itemId: string): Promise<ListResponseDto> {
-        const list = await this.listsRepository.findById(listId);
+    async removeItemFromList(listId: string, itemId: string, userId: string): Promise<ListResponseDto> {
+        const list = await this.listsRepository.findById(listId, userId);
         if (!list) {
             throw new HttpException('List not found', HttpStatus.NOT_FOUND);
         }
-        await this.listsRepository.removeItem(listId, itemId);
-        const updatedList = await this.listsRepository.findById(listId);
+        await this.listsRepository.removeItem(listId, itemId, userId);
+        const updatedList = await this.listsRepository.findById(listId, userId);
         if (!updatedList) {
             throw new HttpException('List not found', HttpStatus.NOT_FOUND);
         }
         return ListMapper.toResponseDto(updatedList);
     }
 
-    async updateList(listId: string, updateListDto: UpdateListRequestDto): Promise<ListResponseDto> {
-        const list = await this.listsRepository.findById(listId);
+    async updateList(listId: string, updateListDto: UpdateListRequestDto, userId: string): Promise<ListResponseDto> {
+        const list = await this.listsRepository.findById(listId, userId);
         if (!list) {
             throw new HttpException('List not found', HttpStatus.NOT_FOUND);
         }
-        const updatedList = await this.listsRepository.update(listId, updateListDto);
+        const updatedList = await this.listsRepository.update(listId, updateListDto, userId);
         if (!updatedList) {
             throw new HttpException('List not found', HttpStatus.NOT_FOUND);
         }
         return ListMapper.toResponseDto(updatedList);
     }
 
-    async getLists(paginatedRequest: PaginatedRequest): Promise<PaginatedResponse<ListResponseDto>> {
-        const lists = await this.listsRepository.findAll(paginatedRequest);
+    async getLists(paginatedRequest: PaginatedRequest, userId: string): Promise<PaginatedResponse<ListResponseDto>> {
+        const lists = await this.listsRepository.findAll(paginatedRequest, userId);
         return {
             data: lists.data.map(list => ListMapper.toResponseDto(list)),
             total: lists.total,
@@ -88,11 +88,11 @@ export class ListsService {
         };
     }
 
-    async deleteList(id: string): Promise<void> {
-        const list = await this.listsRepository.findById(id);
+    async deleteList(id: string, userId: string): Promise<void> {
+        const list = await this.listsRepository.findById(id, userId);
         if (!list) {
             throw new HttpException('List not found', HttpStatus.NOT_FOUND);
         }
-        await this.listsRepository.delete(id);
+        await this.listsRepository.delete(id, userId);
     }
 }
