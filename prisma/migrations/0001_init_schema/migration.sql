@@ -1,18 +1,18 @@
 -- CreateTable
-CREATE TABLE "tracks" (
+CREATE TABLE "users" (
     "id" VARCHAR(50) NOT NULL,
-    "isrc_id" VARCHAR(20),
+    "username" VARCHAR(200) NOT NULL,
     "name" VARCHAR(200) NOT NULL,
-    "artist" VARCHAR(200) NOT NULL,
-    "cover_url" TEXT,
-    "album" VARCHAR(200),
+    "email" VARCHAR(200) NOT NULL,
+    "bio" TEXT,
+    "password" VARCHAR(200) NOT NULL,
+    "is_private" BOOLEAN NOT NULL DEFAULT false,
+    "avatar_url" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
-
-    CONSTRAINT "tracks_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
-
 -- CreateTable
 CREATE TABLE "reviews" (
     "id" TEXT NOT NULL,
@@ -23,12 +23,11 @@ CREATE TABLE "reviews" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
-
-    CONSTRAINT "reviews_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "reviews_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "reviews_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-
--- CreateIndex
 CREATE UNIQUE INDEX "reviews_user_id_track_id_key" ON "reviews"("user_id", "track_id");
-
--- AddForeignKey
-ALTER TABLE "reviews" ADD CONSTRAINT "reviews_track_id_fkey" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- CreateIndex
+CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");

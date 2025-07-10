@@ -13,19 +13,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Track {
+model User {
   id        String    @id @db.VarChar(50)
-  isrcId    String?   @map("isrc_id") @db.VarChar(20)
+  username  String    @unique @db.VarChar(200)
   name      String    @db.VarChar(200)
-  artist    String    @db.VarChar(200)
-  album     String?   @db.VarChar(200)
-  coverUrl  String?   @map("cover_url") @db.Text
+  email     String    @unique @db.VarChar(200)
+  bio       String?   @db.Text
+  password  String    @db.VarChar(200)
+  isPrivate Boolean   @default(false) @map("is_private")
+  avatarUrl String?   @map("avatar_url") @db.Text
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
   reviews   Review[]
 
-  @@map("tracks")
+  @@map("users")
 }
 
 model Review {
@@ -37,8 +39,43 @@ model Review {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
-  track     Track     @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, trackId])
   @@map("reviews")
+}
+
+enum ListType {
+  album
+  artist
+  track
+
+  @@map("list_type")
+}
+
+model List {
+  id        String     @id @default(uuid())
+  name      String     @db.VarChar(200)
+  type      ListType
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @default(now()) @map("updated_at")
+  deletedAt DateTime?  @map("deleted_at")
+  items     ListItem[]
+
+  @@map("lists")
+}
+
+model ListItem {
+  id        String    @id @default(uuid())
+  listId    String    @map("list_id") @db.VarChar(50)
+  itemId    String    @map("item_id") @db.VarChar(50)
+  position  Int       @db.Integer
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  list      List      @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, position])
+  @@unique([listId, itemId])
+  @@map("list_items")
 }
