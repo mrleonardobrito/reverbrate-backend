@@ -1,8 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { AlbumDto } from "src/albums/dtos/search-album.dto";
+import { Album } from "src/albums/entities/album.entity";
 import { ArtistDto } from "src/artists/dtos/search-artist.dto";
 import { PaginatedResponse } from "src/common/http/dtos/paginated-response.dto";
 import { TrackDto } from "src/tracks/dtos/track-response.dto";
-import { Track } from "src/tracks/entities/track.entity";
 
 export class SearchResponse {
     @ApiProperty({ type: PaginatedResponse<TrackDto> })
@@ -11,6 +12,6 @@ export class SearchResponse {
     @ApiProperty({ type: PaginatedResponse<ArtistDto> })
     artists: PaginatedResponse<ArtistDto>;
 
-    // @ApiProperty({ type: PaginatedResponse<Album> })
-    // albums: PaginatedResponse<Album>;
+    @ApiProperty({ type: PaginatedResponse<AlbumDto> })
+    albums: PaginatedResponse<AlbumDto>;
 }

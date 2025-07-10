@@ -25,6 +25,7 @@ export class SearchService {
                     searchResults = {
                         tracks: new PaginatedResponse(),
                         artists: artists,
+                        albums: new PaginatedResponse(),
                     };
                     break;
                 }
@@ -34,20 +35,33 @@ export class SearchService {
                     searchResults = {
                         tracks: tracks,
                         artists: new PaginatedResponse(),
+                        albums: new PaginatedResponse(),
                     };
                     await this.searchReviews(searchResults, userId);
                     break;
                 }
 
+                case 'album': {
+                    const album = await this.searchRepository.searchAlbum(query);
+                    searchResults = {
+                        tracks: new PaginatedResponse(),
+                        artists: new PaginatedResponse(),
+                        albums: album,
+                    };
+                    break;
+                }
+
                 default: {
-                    const [artists, tracks] = await Promise.all([
+                    const [artists, tracks, album] = await Promise.all([
                         this.searchRepository.searchArtist(query),
                         this.searchRepository.searchTrack(query),
+                        this.searchRepository.searchAlbum(query)
                     ]);
 
                     searchResults = {
                         tracks: tracks,
                         artists: artists,
+                        albums: album
                     };
 
                     await this.searchReviews(searchResults, userId);
@@ -55,14 +69,16 @@ export class SearchService {
                 }
             }
         } else {
-            const [artists, tracks] = await Promise.all([
+            const [artists, tracks, album] = await Promise.all([
                 this.searchRepository.searchArtist(query),
                 this.searchRepository.searchTrack(query),
+                this.searchRepository.searchAlbum(query)
             ]);
 
             searchResults = {
                 tracks: tracks,
                 artists: artists,
+                albums: album
             };
 
             await this.searchReviews(searchResults, userId);
@@ -70,7 +86,6 @@ export class SearchService {
 
         return searchResults;
     }
-
 
     private async searchReviews(
         searchResults: SearchResponse,

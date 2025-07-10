@@ -6,6 +6,7 @@ import { SpotifyMapper } from "src/common/http/spotify/mapper/track.mapper";
 import { PaginatedResponse } from "src/common/http/dtos/paginated-response.dto";
 import { TrackDto } from "src/tracks/dtos/track-response.dto";
 import { ArtistDto } from "src/artists/dtos/search-artist.dto";
+import { AlbumDto } from "src/albums/dtos/search-album.dto";
 
 @Injectable()
 export class SearchRepository implements SearchRepository {
@@ -28,5 +29,13 @@ export class SearchRepository implements SearchRepository {
             offset: query.offset,
         });
         return SpotifyMapper.toPaginatedArtistDto(response.body.artists);
+    }
+
+    async searchAlbum(query: SearchRequest): Promise <PaginatedResponse<AlbumDto>> {
+        const response = await this.spotify.search(query.query, ["album"], {
+            limit: query.limit,
+            offset: query.offset,
+        });
+        return SpotifyMapper.toPaginatedAlbumDto(response.body.albums);
     }
 }

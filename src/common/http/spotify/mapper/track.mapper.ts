@@ -5,6 +5,9 @@ import { TrackMapper } from "src/tracks/mappers/track.mapper";
 import { Artist } from "src/artists/entities/artist.entity";
 import { ArtistMapper } from "src/artists/mappers/artist.mapper";
 import { ArtistDto } from "src/artists/dtos/search-artist.dto";
+import { Album } from "src/albums/entities/album.entity";
+import { AlbumDto } from "src/albums/dtos/search-album.dto";
+import { AlbumMapper } from "src/albums/mappers/album.mapper";
 
 export class SpotifyMapper {
     static trackToDomain(rawTrack: SpotifyApi.TrackObjectFull): Track {
@@ -20,11 +23,27 @@ export class SpotifyMapper {
     }
 
     static artistToDomain(rawArtist: SpotifyApi.ArtistObjectFull): Artist {
+        const imageUrl = rawArtist.images?.[0]?.url || '';
+
         return Artist.create({
             id: rawArtist.id,
             name: rawArtist.name,
             uri: rawArtist.uri,
-            image: rawArtist.images[0].url
+            image: imageUrl
+        });
+    }
+
+    static albumToDomain(rawAlbum: SpotifyApi.AlbumObjectSimplified): Album {
+        const artistName = rawAlbum.artists?.[0]?.name || 'Unknown Artist';
+
+        return Album.create({
+            id: rawAlbum.id,
+            name: rawAlbum.name,
+            artist: artistName,
+            uri: rawAlbum.uri,
+            image: rawAlbum.images[0].url,
+            release_date: rawAlbum.release_date,
+            album_type: rawAlbum.album_type,
         });
     }
 
@@ -64,6 +83,29 @@ export class SpotifyMapper {
 
         return {
             data: response.items.map(artist => ArtistMapper.toDto(this.artistToDomain(artist))),
+            total: response.total,
+            limit: response.limit,
+            next: response.next,
+            offset: response.offset,
+            previous: response.previous,
+        };
+    }
+
+
+    static toPaginatedAlbumDto(response: SpotifyApi.PagingObject<SpotifyApi.AlbumObjectSimplified> | undefined,): PaginatedResponse<AlbumDto> { 
+        if (!response) {
+            return {
+                data: [],
+                total: 0,
+                limit: 0,
+                next: null,
+                offset: 0,
+                previous: null,
+            };
+        }
+
+        return {
+            data: response.items.map(rawAlbumItem => AlbumMapper.toDto(AlbumMapper.toDomain(rawAlbumItem))),
             total: response.total,
             limit: response.limit,
             next: response.next,
