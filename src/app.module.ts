@@ -8,6 +8,9 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { UsersModule } from './users/users.module';
 import { AlbumsModule } from './albums/albums.module';
 import { ArtistsModule } from './artists/artists.module';
+import { ListsController } from './lists/lists.controller';
+import { ListsModule } from './lists/lists.module';
+import { TracksModule } from './tracks/tracks.module';
 
 @Module({
   imports: [
@@ -23,6 +26,9 @@ import { ArtistsModule } from './artists/artists.module';
     UsersModule,
     AlbumsModule,
     ArtistsModule,
+    ListsModule,
+    TracksModule,
   ],
+  controllers: [ListsController],
 })
 export class AppModule { }

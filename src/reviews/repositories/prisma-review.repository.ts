@@ -4,8 +4,6 @@ import { ReviewRepository } from "../interfaces/review-repository.interface";
 import { Review } from "../entities/review";
 import { CreateReviewDto } from "../dtos/create-review.dto";
 import { ReviewMapper } from "../mappers/review.mapper";
-import { Track } from "src/tracks/entities/track.entity";
-import { UpdateReviewDto } from "../dtos/update-review.dto";
 import { PaginatedRequest } from "src/common/http/dtos/paginated-request.dto";
 import { PaginatedResponse } from "src/common/http/dtos/paginated-response.dto";
 
@@ -70,27 +68,12 @@ export class PrismaReviewRepository implements ReviewRepository {
         };
     }
 
-    async create(userId: string, reviewDto: CreateReviewDto, track: Track): Promise<Review> {
-        const reviewedTrack = await this.prisma.track.upsert({
-            where: {
-                id: track.id,
-                deletedAt: null
-            },
-            update: {},
-            create: {
-                id: track.id,
-                name: track.name,
-                artist: track.artist,
-                coverUrl: track.image,
-                isrcId: track.isrcId,
-            }
-        });
-
+    async create(userId: string, reviewDto: CreateReviewDto): Promise<Review> {
         const review = await this.prisma.review.upsert({
             where: {
                 userId_trackId: {
                     userId: userId,
-                    trackId: reviewedTrack.id
+                    trackId: reviewDto.track_id
                 },
                 deletedAt: null
             },
@@ -101,7 +84,7 @@ export class PrismaReviewRepository implements ReviewRepository {
             },
             create: {
                 userId: userId,
-                trackId: reviewedTrack.id,
+                trackId: reviewDto.track_id,
                 rate: reviewDto.review.rate,
                 comment: reviewDto.review.comment
             }
