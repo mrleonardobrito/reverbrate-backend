@@ -73,12 +73,27 @@ export default () => ({
 
     security: {
         cors: {
-            origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
+            origin: process.env.CORS_ORIGIN?.split(',') || ['http://127.0.0.1:3000'],
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+            allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Requested-With'],
+            exposedHeaders: ['Set-Cookie'],
             credentials: true,
         },
         rateLimit: {
             windowMs: parseDuration(process.env.RATE_LIMIT_WINDOW_MS || '15m'),
             max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
+        },
+        accessTokenCookie: {
+            domain: process.env.COOKIE_DOMAIN,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict' as const,
+            maxAge: parseDuration(process.env.JWT_EXPIRES_IN || '1h'),
+        },
+        refreshTokenCookie: {
+            domain: process.env.COOKIE_DOMAIN,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict' as const,
+            maxAge: parseDuration(process.env.JWT_REFRESH_EXPIRES_IN || '7d'),
         },
     },
 }); 

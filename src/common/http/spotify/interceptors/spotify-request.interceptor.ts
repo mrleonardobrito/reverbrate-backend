@@ -6,8 +6,15 @@ import { SpotifyService } from '../spotify.service';
 @Injectable()
 export class SpotifyRequestInterceptor implements NestInterceptor {
     private readonly logger = new Logger(SpotifyRequestInterceptor.name);
+    private readonly hiddenFields = ['access_token', 'refresh_token', 'code', 'state'];
 
     constructor(private readonly spotifyService: SpotifyService) { }
+
+
+    private hideFieldsOnLog(string: string) {
+        const regex = new RegExp(`(${this.hiddenFields.join('|')})=[^&\\s]+`, 'g');
+        return string.replace(regex, '$1=***');
+    }
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         const request = context.switchToHttp().getRequest();
@@ -23,7 +30,7 @@ export class SpotifyRequestInterceptor implements NestInterceptor {
                     const duration = endTime - startTime;
 
                     this.logger.log(
-                        `Spotify API Request - Method: ${method} | URL: ${url} | Duration: ${duration}ms`
+                        this.hideFieldsOnLog(`Spotify API Request - Method: ${method} | URL: ${url} | Duration: ${duration}ms`)
                     );
                 },
             })

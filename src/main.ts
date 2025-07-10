@@ -12,8 +12,9 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: '*',
+    origin: 'http://127.0.0.1:3000',
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
