@@ -22,6 +22,7 @@ export class SearchService {
             switch (query.type) {
                 case 'artist': {
                     const artists = await this.searchRepository.searchArtist(query);
+                    
                     searchResults = {
                         tracks: new PaginatedResponse(),
                         artists: artists,

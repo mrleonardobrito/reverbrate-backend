@@ -13,6 +13,7 @@ export class SpotifyAlbumMapper {
       id: album.id,
       name: album.name,
       cover: album.images[0].url,
+      album_type: album.album_type,
       artist_name: album.artists[0].name,
       uri: album.uri,
       tracks: tracksDomain,

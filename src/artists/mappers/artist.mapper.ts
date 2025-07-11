@@ -6,7 +6,7 @@ export class ArtistMapper {
         return {
             id: domain.id,
             name: domain.name,
-            cover: domain.image,
+            cover: domain.cover,
             type: 'artist',
             uri: domain.uri,
         };
@@ -17,7 +17,8 @@ export class ArtistMapper {
             id: rawArtist.id,
             name: rawArtist.name,
             uri: rawArtist.uri,
-            image: imageUrl,
+            cover: imageUrl,
+            tracks: [],
         });
     }
 }

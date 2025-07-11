@@ -8,10 +8,10 @@ export class AlbumMapper {
       id: domain.id,
       uri: domain.uri,
       type: 'album',
-      album_type: domain.albumType,
+      album_type: domain.album_type,
       name: domain.name,
-      artist_name: domain.artist,
-      cover: domain.image,
+      artist_name: domain.artist_name,
+      cover: domain.cover,
     };
   }
 
@@ -19,16 +19,15 @@ export class AlbumMapper {
     const imageUrl = rawAlbum.images?.[0]?.url || '';
     const artistName = rawAlbum.artists?.[0]?.name || 'Unknown Artist';
     const albumType = rawAlbum.album_type || 'album';
-    const releaseDate = rawAlbum.release_date || '';
 
     return Album.create({
       id: rawAlbum.id,
       name: rawAlbum.name,
-      artist: artistName,
+      artist_name: artistName,
       uri: rawAlbum.uri,
-      image: imageUrl,
-      release_date: releaseDate,
-      album_type: albumType, 
+      cover: imageUrl,
+      album_type: albumType,
+      tracks: []
     });
   }
 }
