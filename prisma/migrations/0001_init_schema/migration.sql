@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "users" (
-    "id" TEXT NOT NULL,
+    "id" VARCHAR(5) NOT NULL DEFAULT generate_alphanumeric_id(),
     "nickname" VARCHAR(200) NOT NULL,
     "name" VARCHAR(200) NOT NULL,
     "email" VARCHAR(200) NOT NULL,

@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
+  id        String    @id @db.VarChar(5) @default(dbgenerated("generate_alphanumeric_id()"))
   nickname  String    @unique @db.VarChar(200)
   name      String    @db.VarChar(200)
   email     String    @unique @db.VarChar(200)
@@ -25,7 +25,7 @@ model User {
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
   reviews   Review[]
-  lists     List[]
+  lists     List[] 
 
   @@map("users")
 }
