@@ -1,116 +1,44 @@
-import { Track } from "src/tracks/entities/track.entity";
-import { PaginatedResponse } from "../../dtos/paginated-response.dto";
-import { TrackDto } from "src/tracks/dtos/track-response.dto";
-import { TrackMapper } from "src/tracks/mappers/track.mapper";
-import { Artist } from "src/artists/entities/artist.entity";
-import { ArtistMapper } from "src/artists/mappers/artist.mapper";
-import { ArtistDto } from "src/artists/dtos/search-artist.dto";
-import { Album } from "src/albums/entities/album.entity";
-import { AlbumDto } from "src/albums/dtos/search-album.dto";
-import { AlbumMapper } from "src/albums/mappers/album.mapper";
+import { Track } from 'src/tracks/entities/track.entity';
+import { PaginatedResponse } from '../../dtos/paginated-response.dto';
+import { TrackDto } from 'src/tracks/dtos/track-response.dto';
+import { TrackMapper } from 'src/tracks/mappers/track.mapper';
 
-export class SpotifyMapper {
-    static trackToDomain(rawTrack: SpotifyApi.TrackObjectFull): Track {
-        return Track.create({
-            id: rawTrack.id,
-            name: rawTrack.name,
-            artist: rawTrack.artists[0].name,
-            album: rawTrack.album.name,
-            image: rawTrack.album.images[0].url,
-            uri: rawTrack.uri,
-            isrcId: rawTrack.external_ids.isrc ?? '',
-        });
+export class SpotifyTrackMapper {
+  static toDomain(rawTrack: SpotifyApi.TrackObjectFull): Track {
+    return Track.create({
+      id: rawTrack.id,
+      name: rawTrack.name,
+      artist: rawTrack.artists[0].name,
+      album: rawTrack.album.name,
+      image: rawTrack.album.images[0].url,
+      uri: rawTrack.uri,
+      isrcId: rawTrack.external_ids.isrc ?? '',
+    });
+  }
+
+  static toPaginatedDto(
+    response: SpotifyApi.PagingObject<SpotifyApi.TrackObjectFull> | undefined,
+  ): PaginatedResponse<TrackDto> {
+    if (!response) {
+      return {
+        data: [],
+        total: 0,
+        limit: 0,
+        next: null,
+        offset: 0,
+        previous: null,
+      };
     }
 
-    static artistToDomain(rawArtist: SpotifyApi.ArtistObjectFull): Artist {
-        const imageUrl = rawArtist.images?.[0]?.url || '';
-
-        return Artist.create({
-            id: rawArtist.id,
-            name: rawArtist.name,
-            uri: rawArtist.uri,
-            image: imageUrl
-        });
-    }
-
-    static albumToDomain(rawAlbum: SpotifyApi.AlbumObjectSimplified): Album {
-        const artistName = rawAlbum.artists?.[0]?.name || 'Unknown Artist';
-
-        return Album.create({
-            id: rawAlbum.id,
-            name: rawAlbum.name,
-            artist: artistName,
-            uri: rawAlbum.uri,
-            image: rawAlbum.images[0].url,
-            release_date: rawAlbum.release_date,
-            album_type: rawAlbum.album_type,
-        });
-    }
-
-    static toPaginatedTrackDto(response: SpotifyApi.PagingObject<SpotifyApi.TrackObjectFull> | undefined): PaginatedResponse<TrackDto> {
-        if (!response) {
-            return {
-                data: [],
-                total: 0,
-                limit: 0,
-                next: null,
-                offset: 0,
-                previous: null,
-            };
-        }
-
-        return {
-            data: response.items.map(track => TrackMapper.toDto(this.trackToDomain(track))),
-            total: response.total,
-            limit: response.limit,
-            next: response.next,
-            offset: response.offset,
-            previous: response.previous,
-        };
-    }
-
-    static toPaginatedArtistDto(response: SpotifyApi.PagingObject<SpotifyApi.ArtistObjectFull> | undefined): PaginatedResponse<ArtistDto> {
-        if (!response) {
-            return {
-                data: [],
-                total: 0,
-                limit: 0,
-                next: null,
-                offset: 0,
-                previous: null,
-            };
-        }
-
-        return {
-            data: response.items.map(artist => ArtistMapper.toDto(this.artistToDomain(artist))),
-            total: response.total,
-            limit: response.limit,
-            next: response.next,
-            offset: response.offset,
-            previous: response.previous,
-        };
-    }
-
-
-    static toPaginatedAlbumDto(response: SpotifyApi.PagingObject<SpotifyApi.AlbumObjectSimplified> | undefined,): PaginatedResponse<AlbumDto> { 
-        if (!response) {
-            return {
-                data: [],
-                total: 0,
-                limit: 0,
-                next: null,
-                offset: 0,
-                previous: null,
-            };
-        }
-
-        return {
-            data: response.items.map(rawAlbumItem => AlbumMapper.toDto(AlbumMapper.toDomain(rawAlbumItem))),
-            total: response.total,
-            limit: response.limit,
-            next: response.next,
-            offset: response.offset,
-            previous: response.previous,
-        };
-    }
+    return {
+      data: response.items.map((track) =>
+        TrackMapper.toDto(this.toDomain(track)),
+      ),
+      total: response.total,
+      limit: response.limit,
+      next: response.next,
+      offset: response.offset,
+      previous: response.previous,
+    };
+  }
 }

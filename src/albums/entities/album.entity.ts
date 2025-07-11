@@ -1,76 +1,77 @@
+import { Track } from 'src/tracks/entities/track.entity';
+
 export class Album {
-    private readonly _id: string;
-    private readonly _name: string;
-    private readonly _artist: string; 
-    private readonly _albumType: string; 
-    private readonly _uri: string;
-    private readonly _image: string; 
-    private readonly _releaseDate: string; 
+  private readonly _id: string;
+  private readonly _name: string;
+  private readonly _cover: string;
+  private readonly _album_type: string; 
+  private readonly _artist_name: string;
+  private readonly _uri: string;
+  private readonly _tracks: Track[];
 
-    constructor(
-        id: string,
-        name: string,
-        uri: string,
-        artist: string, 
-        album_type: string,
-        image: string,
-        releaseDate: string,
-    ) {
-        this._id = id;
-        this._name = name;
-        this._uri = uri;
-        this._artist = artist;
-        this._albumType = album_type;
-        this._image = image;
-        this._releaseDate = releaseDate;
-    }
-    
-    get id(): string {
-        return this._id;
-    }
+  constructor(
+    id: string,
+    name: string,
+    cover: string,
+    album_type: string,
+    artist_name: string,
+    uri: string,
+    tracks: Track[],
+  ) {
+    this._id = id;
+    this._name = name;
+    this._cover = cover;
+    this._album_type = album_type;
+    this._artist_name = artist_name;
+    this._uri = uri;
+    this._tracks = tracks;
+  }
 
-    get name(): string {
-        return this._name;
-    }
+  get id(): string {
+    return this._id;
+  }
 
-    get artist(): string {
-        return this._artist;
-    }
+  get name(): string {
+    return this._name;
+  }
 
-    get albumType(): string {
-        return this._albumType;
-    }
+  get cover(): string {
+    return this._cover;
+  }
 
-    get uri(): string {
-        return this._uri;
-    }
+  get album_type(): string {
+    return this._album_type;
+  }
 
-    get image(): string {
-        return this._image;
-    }
+  get artist_name(): string {
+    return this._artist_name;
+  }
 
-    get releaseDate(): string {
-        return this._releaseDate;
-    }
+  get uri(): string {
+    return this._uri;
+  }
 
+  get tracks(): Track[] {
+    return this._tracks;
+  }
 
-    static create(props: {
-        id: string;
-        name: string;
-        uri: string;
-        artist: string; 
-        album_type: string;
-        image: string;
-        release_date: string; 
-    }): Album {
-        return new Album(
-            props.id,
-            props.name,
-            props.uri,
-            props.artist,
-            props.album_type,
-            props.image,
-            props.release_date,
-        );
-    }
+  static create(props: {
+    id: string;
+    name: string;
+    cover: string;
+    album_type: string;
+    artist_name: string;
+    uri: string;
+    tracks: Track[];
+  }): Album {
+    return new Album(
+      props.id,
+      props.name,
+      props.cover,
+      props.album_type,
+      props.artist_name,
+      props.uri,
+      props.tracks,
+    );
+  }
 }

@@ -1,48 +1,59 @@
+import { Track } from 'src/tracks/entities/track.entity';
+
 export class Artist {
-    private readonly _id: string;
-    private readonly _name: string;
-    private readonly _uri: string;
-    private readonly _image: string;
+  private readonly _id: string;
+  private readonly _name: string;
+  private readonly _cover: string;
+  private readonly _uri: string;
+  private readonly _tracks: Track[];
 
-    constructor(
-        id: string,
-        name: string,
-        uri: string,
-        image: string,
-    ) {
-        this._id = id;
-        this._name = name;
-        this._uri = uri;
-        this._image = image;
-    }
+  constructor(
+    id: string,
+    name: string,
+    cover: string,
+    uri: string,
+    tracks: Track[],
+  ) {
+    this._id = id;
+    this._name = name;
+    this._cover = cover;
+    this._uri = uri;
+    this._tracks = tracks;
+  }
 
-    get id() {
-        return this._id;
-    }
+  get id(): string {
+    return this._id;
+  }
 
-    get name() {
-        return this._name;
-    }
+  get name(): string {
+    return this._name;
+  }
 
-    get uri() {
-        return this._uri;
-    }
+  get cover(): string {
+    return this._cover;
+  }
 
-    get image() {
-        return this._image;
-    }
+  get uri(): string {
+    return this._uri;
+  }
 
-    static create(props: {
-        id: string,
-        name: string,
-        uri: string,
-        image: string,
-    }) {
-        return new Artist(
-            props.id,
-            props.name,
-            props.uri,
-            props.image,
-        );
-    }
+  get tracks(): Track[] {
+    return this._tracks;
+  }
+
+  static create(props: {
+    id: string;
+    name: string;
+    cover: string;
+    uri: string;
+    tracks: Track[];
+  }): Artist {
+    return new Artist(
+      props.id,
+      props.name,
+      props.cover,
+      props.uri,
+      props.tracks,
+    );
+  }
 }

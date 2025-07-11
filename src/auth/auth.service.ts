@@ -13,7 +13,15 @@ export class AuthService {
     }
 
     getSpotifyAuthUrl(): string {
-        const scope = ['streaming', 'user-read-email', 'user-top-read'];
+        const scope = [
+            'streaming',
+            'user-read-email',
+            'user-top-read',
+            'user-read-playback-state',
+            'user-modify-playback-state',
+            'user-read-currently-playing',
+            'app-remote-control'
+        ];
         const state = crypto.randomBytes(16).toString('hex');
         const authUrl = this.spotifyApi.createAuthorizeURL(scope, state);
         return authUrl;
