@@ -75,7 +75,7 @@ export class User {
   }
 
   static create(props: {
-    id: string;
+    id?: string;
     email?: string;
     name?: string;
     nickname?: string;
@@ -87,7 +87,7 @@ export class User {
     image?: string;
   }) {
     return new User(
-      props.id,
+      props.id ?? '',
       props.email ?? '',
       props.name ?? '',
       props.nickname ?? '',

@@ -30,17 +30,6 @@ export class PrismaProfileRepository implements ProfileRepository {
   }
 
   async create(user: User): Promise<User> {
-    const newUser = await this.prisma.user.create({
-      data: {
-        id: user.id,
-        nickname: user.nickname,
-        name: user.name,
-        email: user.email,
-        bio: user.bio,
-        avatarUrl: user.image,
-        isPrivate: user.isPrivate,
-      },
-    });
     const nickname = await this.prisma.user.findFirst({
       where: {
         nickname: user.nickname,
@@ -49,6 +38,26 @@ export class PrismaProfileRepository implements ProfileRepository {
     if (nickname) {
       throw new HttpException('Nickname already exists', HttpStatus.CONFLICT);
     }
+
+    const email = await this.prisma.user.findFirst({
+      where: {
+        email: user.email,
+      },
+    });
+    if (email) {
+      throw new HttpException('Email already exists', HttpStatus.CONFLICT);
+    }
+
+    const newUser = await this.prisma.user.create({
+      data: {
+        nickname: user.nickname,
+        name: user.name,
+        email: user.email,
+        bio: user.bio,
+        avatarUrl: user.image,
+        isPrivate: user.isPrivate,
+      },
+    });
 
     return User.create({
       id: newUser.id,

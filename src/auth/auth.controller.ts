@@ -68,6 +68,7 @@ export class AuthController {
     const signUpUrl = this.configService.get<string>('FRONTEND_SIGNUP_URI') || 'http://127.0.0.1:3000/signup';
     if (await this.authService.needSignUp()) {
       res.redirect(signUpUrl);
+      return;
     }
 
     res.cookie(
@@ -139,7 +140,5 @@ export class AuthController {
       tokens.refresh_token,
       this.configService.get<CookieOptions>('refreshTokenCookie') as CookieOptions,
     );
-    const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://127.0.0.1:3000/';
-    res.redirect(frontendUrl);
   }
 }

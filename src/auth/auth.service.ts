@@ -97,15 +97,14 @@ export class AuthService {
   }
 
   async signup(body: SignupRequestDto) {
-    const spotifyUser = await this.spotifyApi.getMe();
-    const image = spotifyUser.body.images?.[0]?.url;
+    // const spotifyUser = await this.spotifyApi.getMe();
+    // const image = spotifyUser.body.images?.[0]?.url;
     const newUser = User.create({
-      id: crypto.randomUUID(),
       nickname: body.nickname,
       bio: body.bio,
       name: body.name,
       email: body.email,
-      image: image,
+      image: '',
       isPrivate: false,
     });
     await this.profileRepository.create(newUser);
