@@ -25,4 +25,4 @@ import { ArtistsModule } from './artists/artists.module';
     ArtistsModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}
