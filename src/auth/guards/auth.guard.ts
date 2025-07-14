@@ -1,7 +1,8 @@
-import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
 import { SpotifyService } from 'src/common/http/spotify/spotify.service';
+import { ProfileRepository } from '../interfaces/profile-repository.interface';
 
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -17,7 +18,9 @@ export class AuthGuard implements CanActivate {
   constructor(
     private authService: AuthService,
     private spotifyService: SpotifyService,
-  ) {}
+    @Inject('ProfileRepository')
+    private profileRepository: ProfileRepository,
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -39,7 +42,11 @@ export class AuthGuard implements CanActivate {
   private async validateAndSetUserInfo(accessToken: string, request: AuthenticatedRequest): Promise<void> {
     this.spotifyService.spotify.setAccessToken(accessToken);
     const userInfo = await this.spotifyService.spotify.getMe();
-    request.user = userInfo.body;
+    const user = await this.profileRepository.findByEmail(userInfo.body.email);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    request.user = user;
   }
 
   private async handleTokenError(refreshToken: string, request: AuthenticatedRequest): Promise<boolean> {
