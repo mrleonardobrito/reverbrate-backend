@@ -1,9 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
-import { UserMapper } from 'src/users/mappers/user.mapper';
+import { User } from 'src/users/entities/user.entity';
 
 interface AuthenticatedRequest extends Request {
-  user?: SpotifyApi.CurrentUsersProfileResponse;
+  user?: User;
 }
 
 export const CurrentUser = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
@@ -11,10 +11,5 @@ export const CurrentUser = createParamDecorator((data: unknown, ctx: ExecutionCo
   if (!request.user) {
     return null;
   }
-  return UserMapper.toDomain({
-    id: request.user.id,
-    email: request.user.email,
-    name: request.user.display_name ?? request.user.email,
-    image: request.user.images?.[0]?.url ?? '',
-  });
+  return request.user;
 });
