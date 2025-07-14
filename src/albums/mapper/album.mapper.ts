@@ -9,7 +9,8 @@ export class AlbumMapper {
       id: album.id,
       name: album.name,
       cover: album.cover,
-      artist_name: album.artist_name,
+      album_type: album.album_type,
+      artist_name: album.artist_name, 
       uri: album.uri,
       tracks: album.tracks.map((track) => {
         const review = reviews.find(

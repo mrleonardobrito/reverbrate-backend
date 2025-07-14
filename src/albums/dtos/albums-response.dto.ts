@@ -42,4 +42,10 @@ export class AlbumDto {
     ],
   })
   tracks: TrackWithReviewDto[];
+
+  @ApiProperty({
+    description: 'The type of the album',
+    example: 'album',
+  })
+  album_type: string;
 }
