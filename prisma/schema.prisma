@@ -14,12 +14,11 @@ datasource db {
 }
 
 model User {
-  id        String    @id @db.VarChar(50)
-  username  String    @unique @db.VarChar(200)
+  id        String    @id @default(dbgenerated("generate_alphanumeric_id()")) @db.VarChar(5)
+  nickname  String    @unique @db.VarChar(200)
   name      String    @db.VarChar(200)
   email     String    @unique @db.VarChar(200)
   bio       String?   @db.Text
-  password  String    @db.VarChar(200)
   isPrivate Boolean   @default(false) @map("is_private")
   avatarUrl String?   @map("avatar_url") @db.Text
   createdAt DateTime  @default(now()) @map("created_at")
