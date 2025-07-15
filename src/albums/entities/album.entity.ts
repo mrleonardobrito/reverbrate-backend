@@ -4,6 +4,7 @@ export class Album {
   private readonly _id: string;
   private readonly _name: string;
   private readonly _cover: string;
+  private readonly _album_type: string; 
   private readonly _artist_name: string;
   private readonly _uri: string;
   private readonly _tracks: Track[];
@@ -12,6 +13,7 @@ export class Album {
     id: string,
     name: string,
     cover: string,
+    album_type: string,
     artist_name: string,
     uri: string,
     tracks: Track[],
@@ -19,6 +21,7 @@ export class Album {
     this._id = id;
     this._name = name;
     this._cover = cover;
+    this._album_type = album_type;
     this._artist_name = artist_name;
     this._uri = uri;
     this._tracks = tracks;
@@ -34,6 +37,10 @@ export class Album {
 
   get cover(): string {
     return this._cover;
+  }
+
+  get album_type(): string {
+    return this._album_type;
   }
 
   get artist_name(): string {
@@ -52,6 +59,7 @@ export class Album {
     id: string;
     name: string;
     cover: string;
+    album_type: string;
     artist_name: string;
     uri: string;
     tracks: Track[];
@@ -60,6 +68,7 @@ export class Album {
       props.id,
       props.name,
       props.cover,
+      props.album_type,
       props.artist_name,
       props.uri,
       props.tracks,

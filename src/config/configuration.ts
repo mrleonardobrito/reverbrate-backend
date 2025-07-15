@@ -45,14 +45,14 @@ export default () => ({
             maxAge: parseDuration(process.env.JWT_EXPIRES_IN || '1h'),
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict' as const,
+            sameSite: 'none' as const,
         },
         refreshToken: {
             name: 'refresh_token',
             maxAge: parseDuration(process.env.JWT_REFRESH_EXPIRES_IN || '7d'),
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict' as const,
+            sameSite: 'none' as const,
         },
     },
 
@@ -86,13 +86,13 @@ export default () => ({
         accessTokenCookie: {
             domain: process.env.COOKIE_DOMAIN,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict' as const,
+            sameSite: 'none' as const,
             maxAge: parseDuration(process.env.JWT_EXPIRES_IN || '1h'),
         },
         refreshTokenCookie: {
             domain: process.env.COOKIE_DOMAIN,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict' as const,
+            sameSite: 'none' as const,
             maxAge: parseDuration(process.env.JWT_REFRESH_EXPIRES_IN || '7d'),
         },
     },

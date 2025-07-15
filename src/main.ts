@@ -12,7 +12,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: 'http://127.0.0.1:3000',
+    origin: ['http://127.0.0.1:3000', 'http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
   });
@@ -32,7 +32,7 @@ async function bootstrap() {
       type: 'apiKey',
       in: 'cookie',
       name: 'access_token',
-      description: 'Cookie de autenticação obtido após login com Spotify'
+      description: 'Cookie de autenticação obtido após login com Spotify',
     })
     .build();
 

@@ -1,11 +1,10 @@
 -- CreateTable
 CREATE TABLE "users" (
-    "id" VARCHAR(50) NOT NULL,
-    "username" VARCHAR(200) NOT NULL,
+    "id" VARCHAR(5) NOT NULL DEFAULT generate_alphanumeric_id(),
+    "nickname" VARCHAR(200) NOT NULL,
     "name" VARCHAR(200) NOT NULL,
     "email" VARCHAR(200) NOT NULL,
     "bio" TEXT,
-    "password" VARCHAR(200) NOT NULL,
     "is_private" BOOLEAN NOT NULL DEFAULT false,
     "avatar_url" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -27,7 +26,6 @@ CREATE TABLE "reviews" (
     CONSTRAINT "reviews_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 CREATE UNIQUE INDEX "reviews_user_id_track_id_key" ON "reviews"("user_id", "track_id");
--- CreateIndex
-CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
+CREATE INDEX users_nickname_id_idx ON users (nickname, id);
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");

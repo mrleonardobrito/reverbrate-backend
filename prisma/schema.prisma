@@ -14,21 +14,21 @@ datasource db {
 }
 
 model User {
-  id        String    @id @db.VarChar(50)
-  username  String    @unique @db.VarChar(200)
+  id        String    @id @db.VarChar(5) @default(dbgenerated("generate_alphanumeric_id()"))
+  nickname  String    @db.VarChar(200)
   name      String    @db.VarChar(200)
   email     String    @unique @db.VarChar(200)
   bio       String?   @db.Text
-  password  String    @db.VarChar(200)
   isPrivate Boolean   @default(false) @map("is_private")
   avatarUrl String?   @map("avatar_url") @db.Text
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
   reviews   Review[]
-  lists     List[]
+  lists     List[] 
 
   @@map("users")
+  @@index([nickname, id])
 }
 
 model Review {

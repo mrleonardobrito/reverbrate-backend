@@ -31,4 +31,4 @@ import { TracksModule } from './tracks/tracks.module';
   ],
   controllers: [ListsController],
 })
-export class AppModule { }
+export class AppModule {}
