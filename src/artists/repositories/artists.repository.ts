@@ -34,4 +34,9 @@ export class SpotifyArtistsRepository implements ArtistRepository {
       ),
     });
   }
+
+  async findManyByIds(ids: string[]): Promise<Artist[]> {
+    const artists = await this.spotify.getArtists(ids);
+    return artists.body.artists.map((artist) => SpotifyArtistMapper.toDomain(artist));
+  }
 }

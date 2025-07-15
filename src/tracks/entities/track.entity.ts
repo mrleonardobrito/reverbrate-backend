@@ -1,3 +1,5 @@
+import { Review } from 'src/reviews/entities/review.entity';
+
 export class Track {
   private readonly _id: string;
   private readonly _name: string;
@@ -6,6 +8,7 @@ export class Track {
   private readonly _uri: string;
   private readonly _image: string;
   private readonly _isrcId: string;
+  private readonly _review: Review | null;
 
   constructor(
     id: string,
@@ -15,6 +18,7 @@ export class Track {
     uri: string,
     image: string,
     isrcId: string,
+    review: Review | null = null,
   ) {
     this._id = id;
     this._name = name;
@@ -23,6 +27,7 @@ export class Track {
     this._uri = uri;
     this._image = image;
     this._isrcId = isrcId;
+    this._review = review;
   }
 
   get id() {
@@ -53,6 +58,10 @@ export class Track {
     return this._isrcId;
   }
 
+  get review(): Review | null {
+    return this._review;
+  }
+
   static create(props: {
     id: string;
     name: string;
@@ -61,6 +70,7 @@ export class Track {
     uri: string;
     image?: string;
     isrcId?: string;
+    review?: Review;
   }) {
     return new Track(
       props.id,
@@ -70,6 +80,7 @@ export class Track {
       props.uri,
       props.image ?? '',
       props.isrcId ?? '',
+      props.review ?? null,
     );
   }
 }

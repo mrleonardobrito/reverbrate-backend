@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReviewRepository } from '../interfaces/review-repository.interface';
-import { Review } from '../entities/review';
+import { Review } from '../entities/review.entity';
 import { CreateReviewDto } from '../dtos/create-review.dto';
-import { ReviewMapper } from '../mappers/review.mapper';
 import { Track } from 'src/tracks/entities/track.entity';
 import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
@@ -33,7 +32,18 @@ export class PrismaReviewRepository implements ReviewRepository {
       },
     });
 
-    return reviews.map(review => ReviewMapper.toDomain(review));
+    return reviews.map(review =>
+      Review.create({
+        id: review.id,
+        userId: review.userId,
+        trackId: review.trackId,
+        rating: review.rate,
+        createdAt: review.createdAt,
+        updatedAt: review.updatedAt,
+        deletedAt: review.deletedAt ?? undefined,
+        comment: review.comment ?? undefined,
+      }),
+    );
   }
 
   async findAll(userId: string, query: PaginatedRequest): Promise<PaginatedResponse<Review>> {
@@ -60,7 +70,18 @@ export class PrismaReviewRepository implements ReviewRepository {
     });
 
     return {
-      data: reviews.map(review => ReviewMapper.toDomain(review)),
+      data: reviews.map(review =>
+        Review.create({
+          id: review.id,
+          userId: review.userId,
+          trackId: review.trackId,
+          rating: review.rate,
+          createdAt: review.createdAt,
+          updatedAt: review.updatedAt,
+          deletedAt: review.deletedAt ?? undefined,
+          comment: review.comment ?? undefined,
+        }),
+      ),
       total: reviews.length,
       limit: query.limit,
       next: null,
@@ -91,7 +112,16 @@ export class PrismaReviewRepository implements ReviewRepository {
       },
     });
 
-    return ReviewMapper.toDomain(review);
+    return Review.create({
+      id: review.id,
+      userId: review.userId,
+      trackId: review.trackId,
+      rating: review.rate,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt,
+      deletedAt: review.deletedAt ?? undefined,
+      comment: review.comment ?? undefined,
+    });
   }
 
   async findByTrackId(userId: string, trackId: string): Promise<Review | null> {
@@ -109,7 +139,16 @@ export class PrismaReviewRepository implements ReviewRepository {
       return null;
     }
 
-    return ReviewMapper.toDomain(review);
+    return Review.create({
+      id: review.id,
+      userId: review.userId,
+      trackId: review.trackId,
+      rating: review.rate,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt,
+      deletedAt: review.deletedAt ?? undefined,
+      comment: review.comment ?? undefined,
+    });
   }
 
   async delete(userId: string, id: string): Promise<Review> {
@@ -120,6 +159,15 @@ export class PrismaReviewRepository implements ReviewRepository {
       },
     });
 
-    return ReviewMapper.toDomain(review);
+    return Review.create({
+      id: review.id,
+      userId: review.userId,
+      trackId: review.trackId,
+      rating: review.rate,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt,
+      deletedAt: review.deletedAt ?? undefined,
+      comment: review.comment ?? undefined,
+    });
   }
 }
