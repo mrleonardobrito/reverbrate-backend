@@ -3,8 +3,9 @@ import { User } from '../entities/user.entity';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { ReviewResumedDto } from 'src/reviews/dtos/review.dto';
 import { UserMapper } from '../mappers/user.mapper';
+import { ListResumedDto } from 'src/lists/dtos/list.dto';
 
-export class CurrentUserResponseDto {
+export class UserResponseDto {
   @ApiProperty({
     description: 'The unique identifier of the user.',
     example: '31exampleuserid12345',
@@ -24,7 +25,7 @@ export class CurrentUserResponseDto {
   email: string;
 
   @ApiProperty({
-    description: 'The URL of the user\'s profile image.',
+    description: "The URL of the user's profile image.",
     example: 'https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228',
   })
   image: string;
@@ -32,14 +33,20 @@ export class CurrentUserResponseDto {
   @ApiProperty({
     description: 'Uma lista paginada das reviews feitas pelo usuário.',
   })
-  reviews: PaginatedResponse<ReviewResumedDto>
+  reviews: PaginatedResponse<ReviewResumedDto>;
 
-  constructor(user: User, reviews: PaginatedResponse<ReviewResumedDto>) { 
-    const userDto = UserMapper.toDTO(user)
+  @ApiProperty({
+    description: 'Uma lista paginada das listas do usuário.',
+  })
+  lists: PaginatedResponse<ListResumedDto>;
+
+  constructor(user: User, reviews: PaginatedResponse<ReviewResumedDto>, lists: PaginatedResponse<ListResumedDto>) {
+    const userDto = UserMapper.toDTO(user);
     this.id = userDto.id;
     this.name = userDto.name;
-    this.email = userDto.email; 
+    this.email = userDto.email;
     this.image = userDto.image || '';
-    this.reviews = reviews; 
+    this.reviews = reviews;
+    this.lists = lists;
   }
 }
