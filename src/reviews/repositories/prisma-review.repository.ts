@@ -10,7 +10,7 @@ import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 
 @Injectable()
 export class PrismaReviewRepository implements ReviewRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async findManyByUserAndTracks(userId: string, trackIds: string[]): Promise<Review[]> {
     const reviews = await this.prisma.review.findMany({
