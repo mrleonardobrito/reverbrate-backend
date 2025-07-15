@@ -13,9 +13,9 @@ import { PrismaProfileRepository } from './repositories/prisma-profile.repositor
   providers: [
     AuthService,
     SpotifyService,
-    AuthGuard,
     { provide: 'ProfileRepository', useClass: PrismaProfileRepository },
+    AuthGuard,
   ],
-  exports: [AuthService, AuthGuard],
+  exports: [AuthService, AuthGuard, 'ProfileRepository'],
 })
-export class AuthModule {}
+export class AuthModule { }

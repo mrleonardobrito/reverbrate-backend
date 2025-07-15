@@ -22,7 +22,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   @ApiOperation({
     summary: 'Iniciar processo de autenticação com Spotify',
@@ -65,12 +65,6 @@ export class AuthController {
 
     const tokens = await this.authService.exchangeCodeForTokens(code);
 
-    const signUpUrl = this.configService.get<string>('FRONTEND_SIGNUP_URI') || 'http://127.0.0.1:3000/signup';
-    if (await this.authService.needSignUp()) {
-      res.redirect(signUpUrl);
-      return;
-    }
-
     res.cookie(
       'access_token',
       tokens.access_token,
@@ -82,8 +76,12 @@ export class AuthController {
       this.configService.get<CookieOptions>('refreshTokenCookie') as CookieOptions,
     );
 
-    const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://127.0.0.1:3000/';
-    res.redirect(frontendUrl);
+    const needsSignUp = await this.authService.needSignUp();
+    const redirectUrl = needsSignUp
+      ? (this.configService.get<string>('FRONTEND_SIGNUP_URI') || 'http://127.0.0.1:3000/signup')
+      : (this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://127.0.0.1:3000/');
+
+    return res.redirect(redirectUrl);
   }
 
   @ApiOperation({
@@ -114,31 +112,19 @@ export class AuthController {
       tokens.refreshToken,
       this.configService.get<CookieOptions>('refreshTokenCookie') as CookieOptions,
     );
-    const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://localhost:3000/';
+    const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://127.0.0.1:3000/';
     res.redirect(frontendUrl);
   }
 
   @Get('token')
   async getToken(@Req() req: Request) {
     const { accessToken } = this.authService.extractToken(req);
-    if (await this.authService.needSignUp()) {
-      throw new HttpException('Need signup', HttpStatus.UNAUTHORIZED);
-    }
-    return { access_token: accessToken };
+    const needsSignUp = await this.authService.needSignUp();
+    return { access_token: accessToken, needs_signup: needsSignUp };
   }
 
   @Post('signup')
   async signup(@Body() body: SignupRequestDto, @Res() res: Response) {
-    const tokens = await this.authService.signup(body);
-    res.cookie(
-      'access_token',
-      tokens.access_token,
-      this.configService.get<CookieOptions>('accessTokenCookie') as CookieOptions,
-    );
-    res.cookie(
-      'refresh_token',
-      tokens.refresh_token,
-      this.configService.get<CookieOptions>('refreshTokenCookie') as CookieOptions,
-    );
+    await this.authService.signup(body);
   }
 }
