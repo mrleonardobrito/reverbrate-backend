@@ -8,7 +8,7 @@ import { UserMapper } from './mappers/user.mapper';
 import { User } from './entities/user.entity';
 import { ListsService } from 'src/lists/lists.service';
 
-@ApiTags('users')
+@ApiTags('Users')
 @Controller('users')
 @UseGuards(AuthGuard)
 export class UsersController {

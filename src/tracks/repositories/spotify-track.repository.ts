@@ -17,6 +17,7 @@ export class SpotifyTrackRepository implements TrackRepository {
       const track = await this.spotify.getTrack(id);
       return SpotifyTrackMapper.toDomain(track.body);
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (error.statusCode === 404) {
         return null;
       }
