@@ -26,7 +26,6 @@ CREATE TABLE "reviews" (
     CONSTRAINT "reviews_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 CREATE UNIQUE INDEX "reviews_user_id_track_id_key" ON "reviews"("user_id", "track_id");
--- CreateIndex
-CREATE UNIQUE INDEX "users_nickname_key" ON "users"("nickname");
+CREATE INDEX users_nickname_id_idx ON users (nickname, id);
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
