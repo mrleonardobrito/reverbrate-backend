@@ -43,6 +43,7 @@ export class TrackDto {
     this.id = track.id;
     this.uri = track.uri;
     this.type = 'track';
+    this.cover = track.image;
     this.name = track.name;
     this.artist_name = track.artist;
   }
