@@ -7,19 +7,19 @@ import { AuthModule } from 'src/auth/auth.module';
 import { SpotifyTrackRepository } from 'src/tracks/repositories/spotify-track.repository';
 
 @Module({
-    imports: [PrismaModule, AuthModule],
-    controllers: [ReviewsController],
-    providers: [
-        ReviewsService,
-        {
-            provide: 'ReviewRepository',
-            useClass: PrismaReviewRepository
-        },
-        {
-            provide: 'TrackRepository',
-            useClass: SpotifyTrackRepository
-        },
-    ],
-    exports: [ReviewsService],
+  imports: [PrismaModule, AuthModule],
+  controllers: [ReviewsController],
+  providers: [
+    ReviewsService,
+    {
+      provide: 'ReviewRepository',
+      useClass: PrismaReviewRepository,
+    },
+    {
+      provide: 'TrackRepository',
+      useClass: SpotifyTrackRepository,
+    },
+  ],
+  exports: [ReviewsService],
 })
-export class ReviewsModule { } 
+export class ReviewsModule {}

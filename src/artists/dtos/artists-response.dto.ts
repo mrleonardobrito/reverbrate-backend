@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsString } from 'class-validator';
 import { TrackWithReviewDto } from 'src/tracks/dtos/track-response.dto';
+import { Artist } from '../entities/artist.entity';
 
 export class ArtistDto {
   @ApiProperty({
@@ -42,4 +43,12 @@ export class ArtistDto {
   @IsArray()
   @IsNotEmpty()
   tracks: TrackWithReviewDto[];
+
+  constructor(artist: Artist) {
+    this.id = artist.id;
+    this.name = artist.name;
+    this.cover = artist.cover;
+    this.uri = artist.uri;
+    this.tracks = artist.tracks.map(track => new TrackWithReviewDto(track));
+  }
 }

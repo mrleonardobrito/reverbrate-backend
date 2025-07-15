@@ -1,7 +1,6 @@
 import { Track } from 'src/tracks/entities/track.entity';
 import { PaginatedResponse } from '../../dtos/paginated-response.dto';
 import { TrackDto } from 'src/tracks/dtos/track-response.dto';
-import { TrackMapper } from 'src/tracks/mappers/track.mapper';
 
 export class SpotifyTrackMapper {
   static toDomain(rawTrack: SpotifyApi.TrackObjectFull): Track {
@@ -31,9 +30,7 @@ export class SpotifyTrackMapper {
     }
 
     return {
-      data: response.items.map((track) =>
-        TrackMapper.toDto(this.toDomain(track)),
-      ),
+      data: response.items.map(track => new TrackDto(this.toDomain(track))),
       total: response.total,
       limit: response.limit,
       next: response.next,

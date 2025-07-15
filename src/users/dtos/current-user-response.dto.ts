@@ -3,6 +3,7 @@ import { User } from '../entities/user.entity';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { ReviewResumedDto } from 'src/reviews/dtos/review.dto';
 import { UserMapper } from '../mappers/user.mapper';
+import { ListResponseDto } from 'src/lists/dto/list-response.dto';
 
 export class CurrentUserResponseDto {
   @ApiProperty({
@@ -34,12 +35,8 @@ export class CurrentUserResponseDto {
   })
   reviews: PaginatedResponse<ReviewResumedDto>
 
-  constructor(user: User, reviews: PaginatedResponse<ReviewResumedDto>) { 
-    const userDto = UserMapper.toDTO(user)
-    this.id = userDto.id;
-    this.name = userDto.name;
-    this.email = userDto.email; 
-    this.image = userDto.image || '';
-    this.reviews = reviews; 
-  }
+  @ApiProperty({
+    description: 'Uma lista paginada das listas criadas pelo usuário.',
+  })
+  lists: PaginatedResponse<ListResponseDto>
 }

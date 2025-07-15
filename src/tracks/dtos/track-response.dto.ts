@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ReviewDto } from 'src/reviews/dtos/review.dto';
+import { Track } from '../entities/track.entity';
 
 export class TrackDto {
   @ApiProperty({
@@ -37,6 +38,14 @@ export class TrackDto {
     example: 'https://example.com/covers/bohemian-rhapsody.jpg',
   })
   cover: string;
+
+  constructor(track: Track) {
+    this.id = track.id;
+    this.uri = track.uri;
+    this.type = 'track';
+    this.name = track.name;
+    this.artist_name = track.artist;
+  }
 }
 
 export class TrackResumedDto {
@@ -69,6 +78,13 @@ export class TrackResumedDto {
     example: 'US-AB-01-0000000000',
   })
   isrc_id: string;
+
+  constructor(track: Track) {
+    this.id = track.id;
+    this.cover = track.image;
+    this.name = track.name;
+    this.artist = track.artist;
+  }
 }
 
 export class TrackWithReviewDto extends TrackResumedDto {
@@ -77,4 +93,9 @@ export class TrackWithReviewDto extends TrackResumedDto {
     type: ReviewDto,
   })
   review: ReviewDto | null;
+
+  constructor(track: Track) {
+    super(track);
+    this.review = track.review ? new ReviewDto(track.review) : null;
+  }
 }
