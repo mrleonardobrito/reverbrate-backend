@@ -8,6 +8,7 @@ import { UserMapper } from './mappers/user.mapper';
 import { User } from './entities/user.entity';
 import { ListsService } from 'src/lists/lists.service';
 import { UserResponseDto } from './dtos/user-response.dto';
+import { UsersService } from './users.service';
 
 @ApiTags('Users')
 @Controller('users')
@@ -16,6 +17,7 @@ export class UsersController {
   constructor(
     private readonly reviewsService: ReviewsService,
     private readonly listsService: ListsService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Get('current')

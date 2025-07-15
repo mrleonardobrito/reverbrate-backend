@@ -1,8 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../entities/user.entity';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
-import { ReviewResumedDto } from 'src/reviews/dtos/review.dto';
+import { Review } from 'src/reviews/entities/review.entity';
 import { UserMapper } from '../mappers/user.mapper';
+import { ReviewMapper } from 'src/reviews/mappers/review.mapper';
+import { ReviewDto } from 'src/reviews/dtos/review.dto';
+import { List } from 'src/lists/entities/list.entity';
 import { ListResponseDto } from 'src/lists/dto/list-response.dto';
 
 export class UserResponseDto {
@@ -33,20 +36,34 @@ export class UserResponseDto {
   @ApiProperty({
     description: 'Uma lista paginada das reviews feitas pelo usuário.',
   })
-  reviews: PaginatedResponse<ReviewResumedDto>;
+  reviews: PaginatedResponse<ReviewDto>;
 
   @ApiProperty({
     description: 'Uma lista paginada das listas do usuário.',
   })
   lists: PaginatedResponse<ListResponseDto>;
 
-  constructor(user: User, reviews: PaginatedResponse<ReviewResumedDto>, lists: PaginatedResponse<ListResponseDto>) {
+  constructor(user: User, reviews: PaginatedResponse<Review>, lists: PaginatedResponse<List>) {
     const userDto = UserMapper.toDTO(user);
     this.id = userDto.id;
     this.name = userDto.name;
     this.email = userDto.email;
     this.image = userDto.image || '';
-    this.reviews = reviews;
-    this.lists = lists;
+    this.reviews = {
+      data: reviews.data.map(review => ReviewMapper.toDto(review)),
+      total: reviews.total,
+      limit: reviews.limit,
+      offset: reviews.offset,
+      next: reviews.next,
+      previous: reviews.previous,
+    };
+    this.lists = {
+      data: lists.data.map(list => new ListResponseDto(list, [])),
+      total: lists.total,
+      limit: lists.limit,
+      offset: lists.offset,
+      next: lists.next,
+      previous: lists.previous,
+    };
   }
 }
