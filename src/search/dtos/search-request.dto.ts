@@ -1,3 +1,4 @@
+// ...
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString, IsNotEmpty, IsOptional, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -43,11 +44,11 @@ export class SearchRequest extends PaginatedRequest {
     @ApiProperty({
         required: false,
         description: 'The type of item to search for. Defaults to "track".',
-        enum: ['track', 'artist', 'album']
+        enum: ['track', 'artist', 'album', 'user']
     })
     @IsString()
     @IsOptional()
-    type: SearchType; 
+    type: SearchType;
 
     @ApiProperty({
         required: false,
@@ -83,7 +84,19 @@ export class SearchRequest extends PaginatedRequest {
     @IsInt()
     @Min(0)
     @Type(() => Number)
-    artists_limit?: number = 20; 
+    artists_limit?: number = 20;
+
+    @ApiProperty({
+        required: false,
+        type: Number,
+        description: 'The maximum number of users to return. Overrides general limit for users.',
+        default: 20,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    @Type(() => Number)
+    user_limit?: number = 20;
 
     @ApiProperty({
         required: false,
@@ -119,5 +132,17 @@ export class SearchRequest extends PaginatedRequest {
     @IsInt()
     @Min(0)
     @Type(() => Number)
-    artists_offset?: number = 0; 
+    artists_offset?: number = 0;
+
+    @ApiProperty({
+        required: false,
+        type: Number,
+        description: 'The number of users to skip. Overrides general offset for users.',
+        default: 0,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    @Type(() => Number)
+    user_offset?: number = 0;
 }
