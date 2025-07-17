@@ -15,7 +15,7 @@ datasource db {
 
 model User {
   id        String    @id @db.VarChar(5) @default(dbgenerated("generate_alphanumeric_id()"))
-  nickname  String    @unique @db.VarChar(200)
+  nickname  String    @db.VarChar(200)
   name      String    @db.VarChar(200)
   email     String    @unique @db.VarChar(200)
   bio       String?   @db.Text
@@ -28,6 +28,7 @@ model User {
   lists     List[] 
 
   @@map("users")
+  @@index([nickname, id])
 }
 
 model Review {

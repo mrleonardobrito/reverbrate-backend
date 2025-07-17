@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TrackWithReviewDto } from 'src/tracks/dtos/track-response.dto';
+import { Album } from '../entities/album.entity';
 
 export class AlbumDto {
   @ApiProperty({
@@ -48,4 +49,13 @@ export class AlbumDto {
     example: 'album',
   })
   album_type: string;
+
+  constructor(album: Album) {
+    this.id = album.id;
+    this.name = album.name;
+    this.cover = album.cover;
+    this.artist_name = album.artist_name;
+    this.uri = album.uri;
+    this.tracks = album.tracks.map(track => new TrackWithReviewDto(track));
+  }
 }

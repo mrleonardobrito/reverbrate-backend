@@ -5,6 +5,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { ReviewsModule } from 'src/reviews/reviews.module';
 import { SpotifyModule } from 'src/common/http/spotify/spotify.module';
 import { SpotifyAlbumRepository } from './repositories/spotify-album.repository';
+import { PrismaReviewRepository } from 'src/reviews/repositories/prisma-review.repository';
 
 @Module({
   controllers: [AlbumsController],
@@ -14,6 +15,10 @@ import { SpotifyAlbumRepository } from './repositories/spotify-album.repository'
     {
       provide: 'AlbumRepository',
       useClass: SpotifyAlbumRepository,
+    },
+    {
+      provide: 'ReviewRepository',
+      useClass: PrismaReviewRepository,
     },
   ],
 })

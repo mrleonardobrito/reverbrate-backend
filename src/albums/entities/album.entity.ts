@@ -4,7 +4,7 @@ export class Album {
   private readonly _id: string;
   private readonly _name: string;
   private readonly _cover: string;
-  private readonly _album_type: string; 
+  private readonly _album_type: string;
   private readonly _artist_name: string;
   private readonly _uri: string;
   private readonly _tracks: Track[];
@@ -64,14 +64,6 @@ export class Album {
     uri: string;
     tracks: Track[];
   }): Album {
-    return new Album(
-      props.id,
-      props.name,
-      props.cover,
-      props.album_type,
-      props.artist_name,
-      props.uri,
-      props.tracks,
-    );
+    return new Album(props.id, props.name, props.cover, props.album_type, props.artist_name, props.uri, props.tracks);
   }
 }
