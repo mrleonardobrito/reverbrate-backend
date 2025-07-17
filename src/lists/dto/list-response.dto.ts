@@ -2,7 +2,7 @@ import { TrackWithReviewDto } from 'src/tracks/dtos/track-response.dto';
 import { ArtistDto } from 'src/artists/dtos/artists-response.dto';
 import { AlbumDto } from 'src/albums/dtos/albums-response.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { List } from '@prisma/client';
+import { List } from '../entities/list.entity';
 
 export type ListItemResponseDto = TrackWithReviewDto | ArtistDto | AlbumDto;
 

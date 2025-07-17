@@ -15,19 +15,25 @@ import { SpotifyAlbumRepository } from 'src/albums/repositories/spotify-album.re
 @Module({
   imports: [AuthModule, PrismaModule, SpotifyModule, TracksModule, ArtistsModule, AlbumsModule],
   controllers: [ListsController],
-  providers: [ListsService, {
-    provide: 'TrackRepository',
-    useClass: SpotifyTrackRepository,
-  }, {
+  providers: [
+    ListsService,
+    {
+      provide: 'TrackRepository',
+      useClass: SpotifyTrackRepository,
+    },
+    {
       provide: 'ArtistRepository',
       useClass: SpotifyArtistsRepository,
-    }, {
+    },
+    {
       provide: 'AlbumRepository',
       useClass: SpotifyAlbumRepository,
-    }, {
+    },
+    {
       provide: 'ListRepository',
       useClass: PrismaListsRepository,
-    }],
-  exports: [ListsService]
+    },
+  ],
+  exports: [ListsService],
 })
-export class ListsModule { }
+export class ListsModule {}

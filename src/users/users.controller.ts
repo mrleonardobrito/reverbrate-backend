@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
@@ -7,6 +7,8 @@ import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { UserMapper } from './mappers/user.mapper';
 import { User } from './entities/user.entity';
 import { ListsService } from 'src/lists/lists.service';
+import { UserResponseDto } from './dtos/user-response.dto';
+import { UsersService } from './users.service';
 
 @ApiTags('Users')
 @Controller('users')
@@ -15,6 +17,7 @@ export class UsersController {
   constructor(
     private readonly reviewsService: ReviewsService,
     private readonly listsService: ListsService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Get('current')
@@ -31,5 +34,13 @@ export class UsersController {
       reviews: paginatedReviews,
       lists: paginatedLists,
     };
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get data from user by id' })
+  @ApiResponse({ status: 200, description: 'Data from user by id', type: UserResponseDto })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getUserById(@Param('id') id: string) {
+    return await this.usersService.getUserById(id);
   }
 }
