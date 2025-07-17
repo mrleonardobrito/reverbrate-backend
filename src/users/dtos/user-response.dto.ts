@@ -34,12 +34,12 @@ export class UserResponseDto {
   image: string;
 
   @ApiProperty({
-    description: 'Uma lista paginada das reviews feitas pelo usuário.',
+    description: 'A paginated list of reviews made by the user.',
   })
   reviews: PaginatedResponse<ReviewDto>;
 
   @ApiProperty({
-    description: 'Uma lista paginada das listas do usuário.',
+    description: 'A paginated list of lists created by the user.',
   })
   lists: PaginatedResponse<ListResponseDto>;
 
