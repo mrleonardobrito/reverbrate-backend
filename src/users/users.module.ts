@@ -44,4 +44,4 @@ import { SpotifyAlbumRepository } from 'src/albums/repositories/spotify-album.re
   ],
   exports: [UsersService],
 })
-export class UsersModule {}
+export class UsersModule { }

@@ -22,6 +22,13 @@ export class UserResponseDto {
   name: string;
 
   @ApiProperty({
+    description: 'The nickname of the user.',
+    example: 'carlos.silva',
+  })
+  nickname: string;
+
+
+  @ApiProperty({
     description: 'The email address of the user.',
     example: 'carlos.silva@example.com',
   })
