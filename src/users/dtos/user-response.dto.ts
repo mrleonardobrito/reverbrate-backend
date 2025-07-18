@@ -74,3 +74,50 @@ export class UserResponseDto {
     };
   }
 }
+
+export class UserSearchResponseDto {
+  @ApiProperty({
+    description: 'The unique identifier of the user.',
+    example: '31exampleuserid12345',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: 'The public display name of the user.',
+    example: 'Carlos Silva',
+  })
+  name: string;
+
+  @ApiProperty({
+    description: 'The nickname of the user.',
+    example: 'carlos.silva',
+  })
+  nickname: string;
+
+  @ApiProperty({
+    description: 'The email address of the user.',
+    example: 'carlos.silva@example.com',
+  })
+  email: string;
+
+  @ApiProperty({
+    description: 'The URL of the user\'s profile image.',
+    example: 'https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228',
+  })
+  avatar_url: string;
+
+  @ApiProperty({
+    description: 'Whether the user is private.',
+    example: false,
+  })
+  is_private: boolean;
+
+  constructor(user: User) {
+    const userDto = UserMapper.toDTO(user);
+    this.id = userDto.id;
+    this.nickname = user.nickname;
+    this.name = userDto.name;
+    this.avatar_url = userDto.image || '';
+    this.is_private = user.isPrivate;
+  }
+}
