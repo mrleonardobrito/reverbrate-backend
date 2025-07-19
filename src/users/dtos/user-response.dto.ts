@@ -104,7 +104,7 @@ export class UserSearchResponseDto {
     description: 'The URL of the user\'s profile image.',
     example: 'https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228',
   })
-  avatar_url: string;
+  image: string;
 
   @ApiProperty({
     description: 'Whether the user is private.',
@@ -117,7 +117,7 @@ export class UserSearchResponseDto {
     this.id = userDto.id;
     this.nickname = user.nickname;
     this.name = userDto.name;
-    this.avatar_url = userDto.image || '';
+    this.image = userDto.image || '';
     this.is_private = user.isPrivate;
   }
 }
