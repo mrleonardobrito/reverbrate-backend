@@ -1,14 +1,12 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Query, UseGuards, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { ReviewsService } from 'src/reviews/reviews.service';
-import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { User } from './entities/user.entity';
-import { ListsService } from 'src/lists/lists.service';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { UsersService } from './users.service';
 import { SearchUsersDto } from './dtos/search-users.dto';
+import { UpdateUserDto } from './dtos/user-request.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -25,6 +23,14 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Access token not found.' })
   async getCurrentUser(@CurrentUser() user: User) {
     return await this.usersService.getUserById(user.id);
+  }
+
+  @Patch('current')
+  @ApiOperation({ summary: 'Update current user' })
+  @ApiResponse({ status: 200, description: 'User updated' })
+  @ApiResponse({ status: 401, description: 'Access token not found.' })
+  async updateCurrentUser(@CurrentUser() user: User, @Body() updateUserDto: UpdateUserDto) {
+    return await this.usersService.updateUser(user.id, updateUserDto);
   }
 
   @Get('search')

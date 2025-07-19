@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '../entities/user.entity';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { Prisma } from '@prisma/client';
+import { UpdateUserDto } from '../dtos/user-request.dto';
 
 interface SearchUserOptions {
   limit?: number;
@@ -112,5 +113,16 @@ export class PrismaUserRepository implements UserRepository {
       next: offset + limit < total ? String(offset + limit) : null,
       previous: offset > 0 ? String(Math.max(offset - limit, 0)) : null,
     };
+  }
+
+  async updateUser(userId: string, updateUserDto: UpdateUserDto): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: updateUserDto.name,
+        bio: updateUserDto.bio,
+        isPrivate: updateUserDto.is_private,
+      },
+    });
   }
 }

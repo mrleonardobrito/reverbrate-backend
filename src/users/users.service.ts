@@ -5,6 +5,7 @@ import { ReviewRepository } from 'src/reviews/interfaces/review-repository.inter
 import { ListRepository } from 'src/lists/interfaces/list-repository.interface';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { SearchUsersDto } from './dtos/search-users.dto';
+import { UpdateUserDto } from './dtos/user-request.dto';
 
 @Injectable()
 export class UsersService {
@@ -56,5 +57,35 @@ export class UsersService {
       next: users.next,
       previous: users.previous,
     };
+  }
+
+  async updateUser(userId: string, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    await this.userRepository.updateUser(userId, updateUserDto);
+
+    // Busca o usuário atualizado
+    const updatedUser = await this.userRepository.findById(userId);
+    if (!updatedUser) {
+      throw new HttpException('User not found after update', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    const reviews = await this.reviewRepository.findAll(updatedUser.id, {
+      limit: 1000000,
+      offset: 0,
+    });
+
+    const lists = await this.listRepository.findAll(
+      {
+        limit: 1000000,
+        offset: 0,
+      },
+      updatedUser.id,
+    );
+
+    return new UserResponseDto(updatedUser, reviews, lists);
   }
 }
