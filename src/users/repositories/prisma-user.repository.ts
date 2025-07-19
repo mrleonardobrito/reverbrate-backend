@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../interfaces/user-repository.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from '../entities/user.entity';
+import { FollowStats, User } from '../entities/user.entity';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { Prisma } from '@prisma/client';
 
@@ -15,8 +15,20 @@ export class PrismaUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaService) { }
 
   async findById(id: string): Promise<User | null> {
+    if (!id) return null;
+
     const user = await this.prisma.user.findUnique({
-      where: { id },
+      where: {
+        id: id,
+      },
+      include: {
+        followStats: {
+          select: {
+            followersCount: true,
+            followeesCount: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -33,6 +45,10 @@ export class PrismaUserRepository implements UserRepository {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       deletedAt: user.deletedAt ?? undefined,
+      followStats: user.followStats ? FollowStats.create({
+        followersCount: user.followStats.followersCount,
+        followeesCount: user.followStats.followeesCount,
+      }) : undefined,
     });
   }
 
@@ -112,5 +128,32 @@ export class PrismaUserRepository implements UserRepository {
       next: offset + limit < total ? String(offset + limit) : null,
       previous: offset > 0 ? String(Math.max(offset - limit, 0)) : null,
     };
+  }
+
+  async followUser(userId: string, followeeId: string): Promise<void> {
+    await this.prisma.follow.create({
+      data: {
+        followerId: userId,
+        followeeId,
+      },
+    });
+  }
+
+  async isFollowing(userId: string, followeeId: string): Promise<boolean> {
+    const follow = await this.prisma.follow.findFirst({
+      where: { followerId: userId, followeeId },
+    });
+    return !!follow;
+  }
+
+  async unfollowUser(userId: string, followeeId: string): Promise<void> {
+    await this.prisma.follow.delete({
+      where: {
+        follows_pkey: {
+          followerId: userId,
+          followeeId,
+        },
+      },
+    });
   }
 }
