@@ -27,6 +27,8 @@ export class PrismaUserRepository implements UserRepository {
       id: user.id,
       name: user.name,
       email: user.email,
+      bio: user.bio ?? '',
+      nickname: user.nickname,
       image: user.avatarUrl ?? '',
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
