@@ -26,13 +26,13 @@ export class NetworkResponseDto {
         description: 'The number of followers',
         example: 100
     })
-    followers_count: number;
+    followers: number;
 
     @ApiProperty({
         description: 'The number of followees',
         example: 100
     })
-    followees_count: number;
+    following: number;
 
     @ApiProperty({
         description: 'The total number of reviews',
@@ -47,8 +47,8 @@ export class NetworkResponseDto {
     lists: number;
 
     constructor(followStats: FollowStats, reviewsTotal: number, listsTotal: number) {
-        this.followers_count = followStats.followersCount;
-        this.followees_count = followStats.followeesCount;
+        this.followers = followStats.followersCount;
+        this.following = followStats.followeesCount;
         this.reviews = reviewsTotal;
         this.lists = listsTotal;
     }
