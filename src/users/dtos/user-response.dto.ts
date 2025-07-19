@@ -41,6 +41,12 @@ export class UserResponseDto {
   image: string;
 
   @ApiProperty({
+    description: 'The bio of the user.',
+    example: 'I am a software engineer and a music lover.',
+  })
+  bio: string;
+
+  @ApiProperty({
     description: 'A paginated list of reviews made by the user.',
   })
   reviews: PaginatedResponse<ReviewDto>;
@@ -56,6 +62,8 @@ export class UserResponseDto {
     this.name = userDto.name;
     this.email = userDto.email;
     this.image = userDto.image || '';
+    this.nickname = user.nickname;
+    this.bio = user.bio || '';
     this.reviews = {
       data: reviews.data.map(review => ReviewMapper.toDto(review)),
       total: reviews.total,
