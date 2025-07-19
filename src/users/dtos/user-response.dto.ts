@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../entities/user.entity';
+import { FollowStats, User } from '../entities/user.entity';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { Review } from 'src/reviews/entities/review.entity';
 import { UserMapper } from '../mappers/user.mapper';
@@ -7,6 +7,7 @@ import { ReviewMapper } from 'src/reviews/mappers/review.mapper';
 import { ReviewDto } from 'src/reviews/dtos/review.dto';
 import { List } from 'src/lists/entities/list.entity';
 import { ListResponseDto } from 'src/lists/dto/list-response.dto';
+import { NetworkResponseDto } from './follow.dto';
 
 export class UserResponseDto {
   @ApiProperty({
@@ -56,6 +57,11 @@ export class UserResponseDto {
   })
   lists: PaginatedResponse<ListResponseDto>;
 
+  @ApiProperty({
+    description: 'The follow info of the user.',
+  })
+  network: NetworkResponseDto | null;
+
   constructor(user: User, reviews: PaginatedResponse<Review>, lists: PaginatedResponse<List>) {
     const userDto = UserMapper.toDTO(user);
     this.id = userDto.id;
@@ -80,6 +86,7 @@ export class UserResponseDto {
       next: lists.next,
       previous: lists.previous,
     };
+    this.network = user.followStats ? new NetworkResponseDto(user.followStats, reviews.total, lists.total) : null;
   }
 }
 

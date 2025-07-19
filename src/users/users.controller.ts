@@ -1,14 +1,12 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth } from '@nestjs/swagger';
+import { Controller, Get, Param, Patch, Query, UseGuards, Body } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiBody } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { ReviewsService } from 'src/reviews/reviews.service';
-import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { User } from './entities/user.entity';
-import { ListsService } from 'src/lists/lists.service';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { UsersService } from './users.service';
 import { SearchUsersDto } from './dtos/search-users.dto';
+import { FollowRequestDto } from './dtos/follow.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -42,6 +40,19 @@ export class UsersController {
       offset: offset ? Number(offset) : 0,
     };
     return await this.usersService.searchUser(searchDto);
+  }
+
+  @Patch('follow')
+  @ApiOperation({ summary: 'Follow or unfollow a user' })
+  @ApiResponse({ status: 200, description: 'Action completed successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiBody({ type: FollowRequestDto })
+  @ApiResponse({ status: 400, description: 'Invalid action or already following/not following' })
+  async followUser(
+    @CurrentUser() user: User,
+    @Body() followRequest: FollowRequestDto
+  ) {
+    return await this.usersService.followUser(user.id, followRequest);
   }
 
   @Get(':id')

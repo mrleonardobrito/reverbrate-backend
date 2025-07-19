@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id        String    @id @db.VarChar(5) @default(dbgenerated("generate_alphanumeric_id()"))
+  id        String    @id @default(dbgenerated("generate_alphanumeric_id()")) @db.VarChar(5)
   nickname  String    @db.VarChar(200)
   name      String    @db.VarChar(200)
   email     String    @unique @db.VarChar(200)
@@ -25,10 +25,15 @@ model User {
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
   reviews   Review[]
-  lists     List[] 
+  lists     List[]
 
-  @@map("users")
+  followers Follow[] @relation("follower")
+  following Follow[] @relation("followee")
+
+  followStats UserFollowStats?
+
   @@index([nickname, id])
+  @@map("users")
 }
 
 model Review {
@@ -81,4 +86,27 @@ model ListItem {
   @@unique([listId, position])
   @@unique([listId, itemId])
   @@map("list_items")
+}
+
+model Follow {
+  followerId String   @map("follower_id")
+  followeeId String   @map("followee_id")
+  followedAt DateTime @default(now()) @map("followed_at")
+
+  follower User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade, map: "fk_follows_follower")
+  followee User @relation("followee", fields: [followeeId], references: [id], onDelete: Cascade, map: "fk_follows_followee")
+
+  @@id([followerId, followeeId], name: "follows_pkey")
+  @@index([followerId], map: "idx_follows_follower")
+  @@index([followeeId], map: "idx_follows_followee")
+  @@map("follows")
+}
+
+model UserFollowStats {
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String @id(map: "user_follow_stats_pkey") @map("user_id")
+  followersCount Int    @default(0) @map("followers_count")
+  followeesCount Int    @default(0) @map("followees_count")
+
+  @@map("user_follow_stats")
 }
