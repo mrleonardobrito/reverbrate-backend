@@ -1,3 +1,28 @@
+export class FollowStats {
+  private readonly _followersCount: number;
+  private readonly _followeesCount: number;
+
+  constructor(followersCount: number, followeesCount: number) {
+    this._followersCount = followersCount;
+    this._followeesCount = followeesCount;
+  }
+
+  get followersCount() {
+    return this._followersCount;
+  }
+
+  get followeesCount() {
+    return this._followeesCount;
+  }
+
+  static create(props: {
+    followersCount: number;
+    followeesCount: number;
+  }) {
+    return new FollowStats(props.followersCount, props.followeesCount);
+  }
+}
+
 export class User {
   private readonly _id: string;
   private readonly _email: string;
@@ -9,6 +34,7 @@ export class User {
   private readonly _createdAt?: Date;
   private readonly _updatedAt?: Date;
   private readonly _deletedAt?: Date;
+  private readonly _followStats?: FollowStats;
 
   constructor(
     id: string,
@@ -21,6 +47,7 @@ export class User {
     updatedAt?: Date,
     deletedAt?: Date,
     image?: string,
+    followStats?: FollowStats,
   ) {
     this._id = id;
     this._email = email;
@@ -32,6 +59,7 @@ export class User {
     this._createdAt = createdAt;
     this._updatedAt = updatedAt;
     this._deletedAt = deletedAt;
+    this._followStats = followStats;
   }
 
   get id() {
@@ -74,6 +102,10 @@ export class User {
     return this._deletedAt;
   }
 
+  get followStats() {
+    return this._followStats;
+  }
+
   static create(props: {
     id?: string;
     email?: string;
@@ -85,6 +117,7 @@ export class User {
     updatedAt?: Date;
     deletedAt?: Date;
     image?: string;
+    followStats?: FollowStats;
   }) {
     return new User(
       props.id ?? '',
@@ -97,6 +130,7 @@ export class User {
       props.updatedAt,
       props.deletedAt,
       props.image,
+      props.followStats,
     );
   }
 }

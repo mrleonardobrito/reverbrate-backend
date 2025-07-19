@@ -5,6 +5,7 @@ import { ReviewRepository } from 'src/reviews/interfaces/review-repository.inter
 import { ListRepository } from 'src/lists/interfaces/list-repository.interface';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { SearchUsersDto } from './dtos/search-users.dto';
+import { FollowRequestDto } from './dtos/follow.dto';
 import { UpdateUserDto } from './dtos/user-request.dto';
 
 @Injectable()
@@ -61,10 +62,6 @@ export class UsersService {
 
   async updateUser(userId: string, updateUserDto: UpdateUserDto) {
     const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
     await this.userRepository.updateUser(userId, updateUserDto);
 
     // Busca o usuário atualizado
@@ -87,5 +84,31 @@ export class UsersService {
     );
 
     return new UserResponseDto(updatedUser, reviews, lists);
+  }
+
+  async followUser(userId: string, followRequest: FollowRequestDto) {
+    const user = await this.userRepository.findById(followRequest.user_id);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    const alreadyFollowing = await this.userRepository.isFollowing(userId, user.id);
+    if (followRequest.action == 'follow') {
+      if (alreadyFollowing) {
+        await this.userRepository.unfollowUser(userId, user.id);
+        return { message: 'User unfollowed' };
+      }
+      await this.userRepository.followUser(userId, user.id);
+      return { message: 'User followed' };
+    } else if (followRequest.action == 'unfollow') {
+      if (!alreadyFollowing) {
+        await this.userRepository.followUser(userId, user.id);
+        return { message: 'User followed' };
+      }
+      await this.userRepository.unfollowUser(userId, user.id);
+      return { message: 'User unfollowed' };
+    } else {
+      throw new HttpException('Invalid action', HttpStatus.BAD_REQUEST);
+    }
   }
 }

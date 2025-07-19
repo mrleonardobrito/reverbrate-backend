@@ -12,4 +12,7 @@ export interface UserRepository {
   findById(id: string): Promise<User | null>;
   searchUser(query: string, options?: SearchUserOptions): Promise<PaginatedResponse<User>>;
   updateUser(userId: string, updateUserDto: UpdateUserDto): Promise<void>;
+  followUser(userId: string, followeeId: string): Promise<void>;
+  isFollowing(userId: string, followeeId: string): Promise<boolean>;
+  unfollowUser(userId: string, followeeId: string): Promise<void>;
 }
