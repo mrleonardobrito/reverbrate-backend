@@ -8,6 +8,7 @@ import { ReviewDto } from 'src/reviews/dtos/review.dto';
 import { List } from 'src/lists/entities/list.entity';
 import { ListResponseDto } from 'src/lists/dto/list-response.dto';
 import { NetworkResponseDto } from './follow.dto';
+import { ReviewWithTrackDto } from 'src/reviews/dtos/review.dto';
 
 export class UserResponseDto {
   @ApiProperty({
@@ -62,7 +63,7 @@ export class UserResponseDto {
   })
   network: NetworkResponseDto | null;
 
-  constructor(user: User, reviews: PaginatedResponse<Review>, lists: PaginatedResponse<List>) {
+  constructor(user: User, reviews: PaginatedResponse<ReviewWithTrackDto>, lists: PaginatedResponse<List>) {
     const userDto = UserMapper.toDTO(user);
     this.id = userDto.id;
     this.name = userDto.name;
@@ -70,14 +71,7 @@ export class UserResponseDto {
     this.image = userDto.image || '';
     this.nickname = user.nickname;
     this.bio = user.bio || '';
-    this.reviews = {
-      data: reviews.data.map(review => ReviewMapper.toDto(review)),
-      total: reviews.total,
-      limit: reviews.limit,
-      offset: reviews.offset,
-      next: reviews.next,
-      previous: reviews.previous,
-    };
+    this.reviews = reviews;
     this.lists = {
       data: lists.data.map(list => new ListResponseDto(list, [])),
       total: lists.total,

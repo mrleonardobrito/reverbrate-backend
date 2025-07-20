@@ -7,6 +7,8 @@ import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { SearchUsersDto } from './dtos/search-users.dto';
 import { FollowRequestDto } from './dtos/follow.dto';
 import { UpdateUserDto } from './dtos/user-request.dto';
+import { TrackRepository } from 'src/tracks/interfaces/track-repository.interface';
+import { ReviewWithTrackDto } from 'src/reviews/dtos/review.dto';
 
 @Injectable()
 export class UsersService {
@@ -17,6 +19,8 @@ export class UsersService {
     private readonly reviewRepository: ReviewRepository,
     @Inject('ListRepository')
     private readonly listRepository: ListRepository,
+    @Inject('TrackRepository')
+    private readonly trackRepository: TrackRepository,
   ) { }
 
   async getUserById(id: string) {
@@ -38,7 +42,19 @@ export class UsersService {
       user.id,
     );
 
-    return new UserResponseDto(user, reviews, lists);
+    const tracks = reviews.data.map(review => review.trackId);
+    const tracksWithRatings = await this.trackRepository.findManyByIds(tracks);
+
+    const reviewsWithTrackInfo = reviews.data.map(review => new ReviewWithTrackDto(review, tracksWithRatings.find(track => track.id === review.trackId)!));
+
+    return new UserResponseDto(user, {
+      data: reviewsWithTrackInfo,
+      total: reviews.total,
+      limit: reviews.limit,
+      offset: reviews.offset,
+      next: reviews.next,
+      previous: reviews.previous,
+    }, lists);
   }
 
   async searchUser(searchDto: SearchUsersDto): Promise<PaginatedResponse<UserSearchResponseDto>> {
@@ -75,6 +91,9 @@ export class UsersService {
       offset: 0,
     });
 
+    const tracks = reviews.data.map(review => review.trackId);
+    const tracksWithRatings = await this.trackRepository.findManyByIds(tracks);
+
     const lists = await this.listRepository.findAll(
       {
         limit: 1000000,
@@ -83,7 +102,16 @@ export class UsersService {
       updatedUser.id,
     );
 
-    return new UserResponseDto(updatedUser, reviews, lists);
+    const reviewsWithTrackInfo = reviews.data.map(review => new ReviewWithTrackDto(review, tracksWithRatings.find(track => track.id === review.trackId)!));
+
+    return new UserResponseDto(updatedUser, {
+      data: reviewsWithTrackInfo,
+      total: reviews.total,
+      limit: reviews.limit,
+      offset: reviews.offset,
+      next: reviews.next,
+      previous: reviews.previous,
+    }, lists);
   }
 
   async followUser(userId: string, followRequest: FollowRequestDto) {

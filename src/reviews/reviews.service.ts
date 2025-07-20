@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ReviewRepository } from './interfaces/review-repository.interface';
 import { CreateReviewDto, CreateReviewResponseDto } from './dtos/create-review.dto';
 import { ReviewMapper } from './mappers/review.mapper';
-import { ReviewResumedDto } from './dtos/review.dto';
+import { ReviewWithTrackDto } from './dtos/review.dto';
 import { TrackRepository } from 'src/tracks/interfaces/track-repository.interface';
 import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
@@ -15,7 +15,7 @@ export class ReviewsService {
     private readonly reviewRepository: ReviewRepository,
     @Inject('TrackRepository')
     private readonly trackRepository: TrackRepository,
-  ) {}
+  ) { }
 
   async create(userId: string, createReviewDto: CreateReviewDto): Promise<CreateReviewResponseDto> {
     const track = await this.trackRepository.findById(createReviewDto.track_id);
@@ -29,7 +29,7 @@ export class ReviewsService {
     };
   }
 
-  async getReviewByTrackId(userId: string, trackId: string): Promise<ReviewResumedDto> {
+  async getReviewByTrackId(userId: string, trackId: string): Promise<ReviewWithTrackDto> {
     const track = await this.trackRepository.findById(trackId);
     if (!track) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
@@ -39,13 +39,12 @@ export class ReviewsService {
       throw new HttpException('Review not found', HttpStatus.NOT_FOUND);
     }
     return {
-      id: review.id,
-      review: ReviewMapper.toDto(review),
+      ...ReviewMapper.toDto(review),
       track_info: new TrackWithReviewDto(track),
     };
   }
 
-  async getAllReviews(userId: string, query: PaginatedRequest): Promise<PaginatedResponse<ReviewResumedDto>> {
+  async getAllReviews(userId: string, query: PaginatedRequest): Promise<PaginatedResponse<ReviewWithTrackDto>> {
     const reviews = await this.reviewRepository.findAll(userId, query);
     if (!reviews.data) {
       return {
@@ -61,8 +60,7 @@ export class ReviewsService {
     const reviewsWithTrackInfo = reviews.data
       .filter(review => tracks.some(track => track.id === review.trackId))
       .map(review => ({
-        id: review.id,
-        review: ReviewMapper.toDto(review),
+        ...ReviewMapper.toDto(review),
         track_info: new TrackWithReviewDto(tracks.find(track => track.id === review.trackId)!),
       }));
     return {

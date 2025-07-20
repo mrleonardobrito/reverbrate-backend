@@ -57,16 +57,7 @@ export class ReviewDto {
   }
 }
 
-export class ReviewResumedDto {
-  @ApiProperty({
-    description: 'Review id',
-    example: '123',
-  })
-  @IsNotEmpty()
-  @IsString()
-  @IsUUID()
-  id: string;
-
+export class ReviewWithTrackDto extends ReviewDto {
   @ApiProperty({
     description: 'Track information',
     type: TrackResumedDto,
@@ -75,17 +66,8 @@ export class ReviewResumedDto {
   @IsString()
   track_info: TrackResumedDto;
 
-  @ApiProperty({
-    description: 'Review',
-    type: ReviewDto,
-  })
-  @IsNotEmpty()
-  @IsObject()
-  review: ReviewDto;
-
   constructor(review: Review, track: Track) {
-    this.id = review.id;
+    super(review);
     this.track_info = new TrackResumedDto(track);
-    this.review = new ReviewDto(review);
   }
 }
