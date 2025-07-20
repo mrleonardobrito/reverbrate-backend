@@ -7,6 +7,7 @@ import { UserResponseDto } from './dtos/user-response.dto';
 import { UsersService } from './users.service';
 import { SearchUsersDto } from './dtos/search-users.dto';
 import { FollowRequestDto } from './dtos/follow.dto';
+import { UpdateUserDto } from './dtos/user-request.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -23,6 +24,14 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Access token not found.' })
   async getCurrentUser(@CurrentUser() user: User) {
     return await this.usersService.getUserById(user.id);
+  }
+
+  @Patch('current')
+  @ApiOperation({ summary: 'Update current user' })
+  @ApiResponse({ status: 200, description: 'User updated' })
+  @ApiResponse({ status: 401, description: 'Access token not found.' })
+  async updateCurrentUser(@CurrentUser() user: User, @Body() updateUserDto: UpdateUserDto) {
+    return await this.usersService.updateUser(user.id, updateUserDto);
   }
 
   @Get('search')
