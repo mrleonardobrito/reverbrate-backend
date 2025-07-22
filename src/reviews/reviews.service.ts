@@ -1,8 +1,7 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ReviewRepository } from './interfaces/review-repository.interface';
 import { CreateReviewDto, CreateReviewResponseDto } from './dtos/create-review.dto';
-import { ReviewMapper } from './mappers/review.mapper';
-import { ReviewWithTrackDto } from './dtos/review.dto';
+import { ReviewDto, ReviewWithTrackDto } from './dtos/review.dto';
 import { TrackRepository } from 'src/tracks/interfaces/track-repository.interface';
 import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
@@ -24,7 +23,7 @@ export class ReviewsService {
     }
     const review = await this.reviewRepository.create(userId, createReviewDto, track);
     return {
-      review: ReviewMapper.toDto(review),
+      review: new ReviewDto(review),
       track_id: track.id,
     };
   }
@@ -39,7 +38,7 @@ export class ReviewsService {
       throw new HttpException('Review not found', HttpStatus.NOT_FOUND);
     }
     return {
-      ...ReviewMapper.toDto(review),
+      ...new ReviewDto(review),
       track_info: new TrackWithReviewDto(track),
     };
   }
@@ -60,7 +59,7 @@ export class ReviewsService {
     const reviewsWithTrackInfo = reviews.data
       .filter(review => tracks.some(track => track.id === review.trackId))
       .map(review => ({
-        ...ReviewMapper.toDto(review),
+        ...new ReviewDto(review),
         track_info: new TrackWithReviewDto(tracks.find(track => track.id === review.trackId)!),
       }));
     return {

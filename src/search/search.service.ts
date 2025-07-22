@@ -1,10 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { ReviewRepository } from 'src/reviews/interfaces/review-repository.interface';
-import { ReviewMapper } from 'src/reviews/mappers/review.mapper';
 import { SearchRequest } from './dtos/search-request.dto';
 import { SearchResponse } from './dtos/search-response.dto';
 import { SearchRepository } from './repositories/spotify-search.repository';
+import { ReviewDto } from 'src/reviews/dtos/review.dto';
 
 @Injectable()
 export class SearchService {
@@ -13,7 +13,7 @@ export class SearchService {
     private readonly searchRepository: SearchRepository,
     @Inject('ReviewRepository')
     private readonly reviewRepository: ReviewRepository,
-  ) {}
+  ) { }
 
   async search(query: SearchRequest, userId: string): Promise<SearchResponse> {
     let searchResults: SearchResponse;
@@ -100,7 +100,7 @@ export class SearchService {
 
     searchResults.tracks.data = searchResults.tracks.data.map(track => ({
       ...track,
-      review: reviewsMap.get(track.id) ? ReviewMapper.toDto(reviewsMap.get(track.id)!) : null,
+      review: reviewsMap.get(track.id) ? new ReviewDto(reviewsMap.get(track.id)!) : null,
     }));
   }
 }
