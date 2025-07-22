@@ -29,7 +29,6 @@ export class ProfileResponseDto {
   })
   nickname: string;
 
-
   @ApiProperty({
     description: 'The email address of the user.',
     example: 'carlos.silva@example.com',
@@ -50,16 +49,20 @@ export class ProfileResponseDto {
 
   @ApiProperty({
     description: 'A paginated list of reviews made by the user.',
+    type: () => PaginatedResponse<ReviewDto>,
   })
   reviews: PaginatedResponse<ReviewDto>;
 
   @ApiProperty({
     description: 'A paginated list of lists created by the user.',
+    type: () => PaginatedResponse<ListResponseDto>,
   })
   lists: PaginatedResponse<ListResponseDto>;
 
   @ApiProperty({
     description: 'The follow info of the user.',
+    type: () => NetworkResponseDto,
+    nullable: true,
   })
   network: NetworkResponseDto | null;
 
@@ -100,6 +103,39 @@ export class UserResponseDto extends ProfileResponseDto {
   constructor(user: User, isFollowing: boolean, reviews: PaginatedResponse<ReviewWithTrackDto>, lists: PaginatedResponse<List>) {
     super(user, reviews, lists);
     this.is_following = isFollowing;
+  }
+}
+
+export class CreatedByResponseDto {
+  @ApiProperty({
+    description: 'The unique identifier of the user.',
+    example: '31exampleuserid12345',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: 'The URL of the user\'s profile image.',
+    example: 'https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228',
+  })
+  image: string;
+
+  @ApiProperty({
+    description: 'The public display name of the user.',
+    example: 'Carlos Silva',
+  })
+  name: string;
+
+  @ApiProperty({
+    description: 'The nickname of the user.',
+    example: 'carlos.silva',
+  })
+  nickname: string;
+
+  constructor(user: User) {
+    this.id = user.id;
+    this.image = user.image ?? '';
+    this.name = user.name;
+    this.nickname = user.nickname;
   }
 }
 

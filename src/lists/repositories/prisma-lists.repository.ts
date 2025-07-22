@@ -9,6 +9,7 @@ import { AlbumRepository } from 'src/albums/interfaces/album-repository.interfac
 import { CreateListRequestDto, UpdateListRequestDto } from '../dto/list-request.dto';
 import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class PrismaListsRepository implements ListRepository {
@@ -37,6 +38,9 @@ export class PrismaListsRepository implements ListRepository {
         type: list.type,
         userId: userId,
       },
+      include: {
+        user: true,
+      },
     });
 
     return List.create({
@@ -47,12 +51,26 @@ export class PrismaListsRepository implements ListRepository {
       createdAt: prismaList.createdAt,
       updatedAt: prismaList.updatedAt,
       deletedAt: prismaList.deletedAt ?? null,
+      createdBy: User.create({
+        id: prismaList.user.id,
+        name: prismaList.user.name,
+        nickname: prismaList.user.nickname,
+        email: prismaList.user.email,
+        image: prismaList.user.avatarUrl ?? undefined,
+        bio: prismaList.user.bio ?? undefined,
+        createdAt: prismaList.user.createdAt,
+        updatedAt: prismaList.user.updatedAt,
+        deletedAt: prismaList.user.deletedAt ?? undefined,
+      }),
     });
   }
 
   async findById(id: string): Promise<List | null> {
     const prismaList = await this.prisma.list.findUnique({
       where: { id },
+      include: {
+        user: true,
+      },
     });
 
     if (!prismaList) return null;
@@ -74,6 +92,17 @@ export class PrismaListsRepository implements ListRepository {
         createdAt: prismaList.createdAt,
         updatedAt: prismaList.updatedAt,
         deletedAt: prismaList.deletedAt ?? null,
+        createdBy: User.create({
+          id: prismaList.user.id,
+          name: prismaList.user.name,
+          nickname: prismaList.user.nickname,
+          email: prismaList.user.email,
+          image: prismaList.user.avatarUrl ?? undefined,
+          bio: prismaList.user.bio ?? undefined,
+          createdAt: prismaList.user.createdAt,
+          updatedAt: prismaList.user.updatedAt,
+          deletedAt: prismaList.user.deletedAt ?? undefined,
+        }),
       });
     }
 
@@ -99,10 +128,21 @@ export class PrismaListsRepository implements ListRepository {
       updatedAt: prismaList.updatedAt,
       deletedAt: prismaList.deletedAt ?? null,
       items,
+      createdBy: User.create({
+        id: prismaList.user.id,
+        name: prismaList.user.name,
+        nickname: prismaList.user.nickname,
+        email: prismaList.user.email,
+        image: prismaList.user.avatarUrl ?? undefined,
+        bio: prismaList.user.bio ?? undefined,
+        createdAt: prismaList.user.createdAt,
+        updatedAt: prismaList.user.updatedAt,
+        deletedAt: prismaList.user.deletedAt ?? undefined,
+      }),
     });
   }
 
-  async addItem(listId: string, itemId: string): Promise<void> {
+  async addItem(listId: string, itemId: string, userId: string): Promise<void> {
     const existingItem = await this.prisma.listItem.findUnique({
       where: {
         listId_itemId: {
@@ -207,6 +247,7 @@ export class PrismaListsRepository implements ListRepository {
       createdAt: list.createdAt,
       updatedAt: list.updatedAt,
       deletedAt: list.deletedAt ?? null,
+      createdBy: list.createdBy,
     });
   }
 
@@ -221,6 +262,7 @@ export class PrismaListsRepository implements ListRepository {
             position: 'asc',
           },
         },
+        user: true,
       },
     });
 
@@ -251,6 +293,17 @@ export class PrismaListsRepository implements ListRepository {
           createdAt: prismaList.createdAt,
           updatedAt: prismaList.updatedAt,
           deletedAt: prismaList.deletedAt ?? null,
+          createdBy: User.create({
+            id: prismaList.user.id,
+            name: prismaList.user.name,
+            nickname: prismaList.user.nickname,
+            email: prismaList.user.email,
+            image: prismaList.user.avatarUrl ?? undefined,
+            bio: prismaList.user.bio ?? undefined,
+            createdAt: prismaList.user.createdAt,
+            updatedAt: prismaList.user.updatedAt,
+            deletedAt: prismaList.user.deletedAt ?? undefined,
+          }),
         });
       }),
     );
