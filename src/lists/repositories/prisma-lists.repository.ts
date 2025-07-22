@@ -271,4 +271,23 @@ export class PrismaListsRepository implements ListRepository {
       data: { deletedAt: new Date() },
     });
   }
+
+  async like(id: string, userId: string): Promise<void> {
+    await this.prisma.listLikes.create({
+      data: { listId: id, userId },
+    });
+  }
+
+  async unlike(id: string, userId: string): Promise<void> {
+    await this.prisma.listLikes.delete({
+      where: { listId_userId: { listId: id, userId } },
+    });
+  }
+
+  async alreadyLiked(id: string, userId: string): Promise<boolean> {
+    const like = await this.prisma.listLikes.findUnique({
+      where: { listId_userId: { listId: id, userId } },
+    });
+    return !!like;
+  }
 }
