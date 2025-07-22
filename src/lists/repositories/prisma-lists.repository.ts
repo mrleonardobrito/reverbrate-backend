@@ -70,7 +70,7 @@ export class PrismaListsRepository implements ListRepository {
 
   async findById(id: string, userId: string): Promise<List | null> {
     const prismaList = await this.prisma.list.findUnique({
-      where: { id, userId },
+      where: { id },
       include: {
         user: true,
       },
