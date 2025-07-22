@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ListRepository } from './interfaces/list-repository.interface';
 import { CreateListRequestDto, UpdateListRequestDto } from './dto/list-request.dto';
 import { ListResponseDto } from './dto/list-response.dto';
-import { ListMapper } from './mappers/list.mapper';
 import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 
@@ -15,15 +14,7 @@ export class ListsService {
 
   async createList(createListRequestDto: CreateListRequestDto, userId: string): Promise<ListResponseDto> {
     const list = await this.listsRepository.create(createListRequestDto, userId);
-    return {
-      id: list.id,
-      name: list.name,
-      type: list.type,
-      items: [],
-      created_at: list.createdAt,
-      updated_at: list.updatedAt,
-      deleted_at: list.deletedAt,
-    };
+    return new ListResponseDto(list, []);
   }
 
   async getList(id: string, userId: string): Promise<ListResponseDto> {
@@ -31,7 +22,7 @@ export class ListsService {
     if (!list) {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
-    return ListMapper.toResponseDto(list);
+    return new ListResponseDto(list, []);
   }
 
   async addItemToList(listId: string, itemId: string, userId: string): Promise<ListResponseDto> {
@@ -48,7 +39,7 @@ export class ListsService {
     if (!updatedList) {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
-    return ListMapper.toResponseDto(updatedList);
+    return new ListResponseDto(updatedList, []);
   }
 
   async removeItemFromList(listId: string, itemId: string, userId: string): Promise<ListResponseDto> {
@@ -61,7 +52,7 @@ export class ListsService {
     if (!updatedList) {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
-    return ListMapper.toResponseDto(updatedList);
+    return new ListResponseDto(updatedList, []);
   }
 
   async updateList(listId: string, updateListDto: UpdateListRequestDto, userId: string): Promise<ListResponseDto> {
@@ -73,13 +64,13 @@ export class ListsService {
     if (!updatedList) {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
-    return ListMapper.toResponseDto(updatedList);
+    return new ListResponseDto(updatedList, []);
   }
 
   async getLists(paginatedRequest: PaginatedRequest, userId: string): Promise<PaginatedResponse<ListResponseDto>> {
     const lists = await this.listsRepository.findAll(paginatedRequest, userId);
     return {
-      data: lists.data.map(list => ListMapper.toResponseDto(list)),
+      data: lists.data.map(list => new ListResponseDto(list, [])),
       total: lists.total,
       limit: lists.limit,
       next: lists.next,
