@@ -156,6 +156,10 @@ export class UsersService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
+    if (user.id === userId) {
+      throw new HttpException('You cannot follow yourself', HttpStatus.BAD_REQUEST);
+    }
+
     const alreadyFollowing = await this.userRepository.isFollowing(userId, user.id);
     if (alreadyFollowing) {
       await this.userRepository.unfollowUser(userId, user.id);
