@@ -7,7 +7,7 @@ import { ReviewMapper } from 'src/reviews/mappers/review.mapper';
 import { ReviewDto } from 'src/reviews/dtos/review.dto';
 import { List } from 'src/lists/entities/list.entity';
 import { ListResponseDto } from 'src/lists/dto/list-response.dto';
-import { NetworkResponseDto } from './follow.dto';
+import { NetworkResponseDto } from './network.dto';
 import { ReviewWithTrackDto } from 'src/reviews/dtos/review.dto';
 
 export class ProfileResponseDto {

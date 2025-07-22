@@ -6,7 +6,6 @@ import { User } from './entities/user.entity';
 import { ProfileResponseDto, UserResponseDto } from './dtos/user-response.dto';
 import { UsersService } from './users.service';
 import { SearchUsersDto } from './dtos/search-users.dto';
-import { FollowRequestDto } from './dtos/follow.dto';
 import { UpdateUserDto } from './dtos/user-request.dto';
 
 @ApiTags('Users')
@@ -51,24 +50,23 @@ export class UsersController {
     return await this.usersService.searchUser(searchDto);
   }
 
-  @Patch('follow')
-  @ApiOperation({ summary: 'Follow or unfollow a user' })
-  @ApiResponse({ status: 200, description: 'Action completed successfully' })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiBody({ type: FollowRequestDto })
-  @ApiResponse({ status: 400, description: 'Invalid action or already following/not following' })
-  async followUser(
-    @CurrentUser() user: User,
-    @Body() followRequest: FollowRequestDto
-  ) {
-    return await this.usersService.followUser(user.id, followRequest);
-  }
-
   @Get(':id')
   @ApiOperation({ summary: 'Get data from user by id' })
   @ApiResponse({ status: 200, description: 'Data from user by id', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
   async getUserById(@CurrentUser() user: User, @Param('id') id: string) {
     return await this.usersService.getUserById(user.id, id);
+  }
+
+  @Patch(':id/follow')
+  @ApiOperation({ summary: 'Follow or unfollow a user' })
+  @ApiResponse({ status: 200, description: 'Action completed successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 400, description: 'Invalid action or already following/not following' })
+  async followUser(
+    @CurrentUser() user: User,
+    @Param('id') id: string
+  ) {
+    return await this.usersService.followUser(user.id, id);
   }
 }
