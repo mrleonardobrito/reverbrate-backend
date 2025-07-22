@@ -4,7 +4,7 @@ import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { UserMapper } from '../mappers/user.mapper';
 import { ReviewDto } from 'src/reviews/dtos/review.dto';
 import { List } from 'src/lists/entities/list.entity';
-import { ListResponseDto } from 'src/lists/dto/list-response.dto';
+import { ListResponseDto, ListWithIsLikedResponseDto } from 'src/lists/dto/list-response.dto';
 import { NetworkResponseDto } from './network.dto';
 import { ReviewWithTrackDto } from 'src/reviews/dtos/review.dto';
 
@@ -55,7 +55,7 @@ export class ProfileResponseDto {
     description: 'A paginated list of lists created by the user.',
     type: () => PaginatedResponse<ListResponseDto>,
   })
-  lists: PaginatedResponse<ListResponseDto>;
+  lists: PaginatedResponse<ListWithIsLikedResponseDto>;
 
   @ApiProperty({
     description: 'The follow info of the user.',
@@ -80,7 +80,7 @@ export class ProfileResponseDto {
     this.bio = user.bio || '';
     this.reviews = reviews;
     this.lists = {
-      data: lists.data.map(list => new ListResponseDto(list, [])),
+      data: lists.data.map(list => new ListWithIsLikedResponseDto(list, [], list.isLiked)),
       total: lists.total,
       limit: lists.limit,
       offset: lists.offset,

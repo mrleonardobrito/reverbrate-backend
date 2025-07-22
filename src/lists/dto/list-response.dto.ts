@@ -76,3 +76,16 @@ export class ListResponseDto {
     this.created_by = new CreatedByResponseDto(list.createdBy);
   }
 }
+
+export class ListWithIsLikedResponseDto extends ListResponseDto {
+  @ApiProperty({
+    description: 'Whether the list is liked by the current user.',
+    example: false,
+  })
+  is_liked: boolean;
+
+  constructor(list: List, items: ListItemResponseDto[], isLiked: boolean) {
+    super(list, items);
+    this.is_liked = isLiked;
+  }
+}
