@@ -6,10 +6,11 @@ import { CreateReviewDto } from '../dtos/create-review.dto';
 import { Track } from 'src/tracks/entities/track.entity';
 import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class PrismaReviewRepository implements ReviewRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async findManyByUserAndTracks(userId: string, trackIds: string[]): Promise<Review[]> {
     const reviews = await this.prisma.review.findMany({
@@ -29,6 +30,19 @@ export class PrismaReviewRepository implements ReviewRepository {
         createdAt: true,
         updatedAt: true,
         deletedAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            nickname: true,
+            avatarUrl: true,
+            bio: true,
+            createdAt: true,
+            updatedAt: true,
+            deletedAt: true,
+          },
+        },
       },
     });
 
@@ -42,6 +56,16 @@ export class PrismaReviewRepository implements ReviewRepository {
         updatedAt: review.updatedAt,
         deletedAt: review.deletedAt ?? undefined,
         comment: review.comment ?? undefined,
+        createdBy: User.create({
+          id: review.user.id,
+          name: review.user.name,
+          email: review.user.email,
+          nickname: review.user.nickname,
+          image: review.user.avatarUrl ?? undefined,
+          bio: review.user.bio ?? undefined,
+          createdAt: review.user.createdAt,
+          updatedAt: review.user.updatedAt,
+        }),
       }),
     );
   }
@@ -66,6 +90,19 @@ export class PrismaReviewRepository implements ReviewRepository {
         createdAt: true,
         updatedAt: true,
         deletedAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            nickname: true,
+            avatarUrl: true,
+            bio: true,
+            createdAt: true,
+            updatedAt: true,
+            deletedAt: true,
+          },
+        },
       },
     });
 
@@ -80,6 +117,16 @@ export class PrismaReviewRepository implements ReviewRepository {
           updatedAt: review.updatedAt,
           deletedAt: review.deletedAt ?? undefined,
           comment: review.comment ?? undefined,
+          createdBy: User.create({
+            id: review.user.id,
+            name: review.user.name,
+            email: review.user.email,
+            nickname: review.user.nickname,
+            image: review.user.avatarUrl ?? undefined,
+            bio: review.user.bio ?? undefined,
+            createdAt: review.user.createdAt,
+            updatedAt: review.user.updatedAt,
+          }),
         }),
       ),
       total: reviews.length,
@@ -110,6 +157,9 @@ export class PrismaReviewRepository implements ReviewRepository {
         rate: reviewDto.review.rate,
         comment: reviewDto.review.comment,
       },
+      include: {
+        user: true,
+      },
     });
 
     return Review.create({
@@ -121,6 +171,16 @@ export class PrismaReviewRepository implements ReviewRepository {
       updatedAt: review.updatedAt,
       deletedAt: review.deletedAt ?? undefined,
       comment: review.comment ?? undefined,
+      createdBy: User.create({
+        id: review.user.id,
+        name: review.user.name,
+        email: review.user.email,
+        nickname: review.user.nickname,
+        image: review.user.avatarUrl ?? undefined,
+        bio: review.user.bio ?? undefined,
+        createdAt: review.user.createdAt,
+        updatedAt: review.user.updatedAt,
+      }),
     });
   }
 
@@ -132,6 +192,9 @@ export class PrismaReviewRepository implements ReviewRepository {
           trackId: trackId,
         },
         deletedAt: null,
+      },
+      include: {
+        user: true,
       },
     });
 
@@ -148,6 +211,16 @@ export class PrismaReviewRepository implements ReviewRepository {
       updatedAt: review.updatedAt,
       deletedAt: review.deletedAt ?? undefined,
       comment: review.comment ?? undefined,
+      createdBy: User.create({
+        id: review.user.id,
+        name: review.user.name,
+        email: review.user.email,
+        nickname: review.user.nickname,
+        image: review.user.avatarUrl ?? undefined,
+        bio: review.user.bio ?? undefined,
+        createdAt: review.user.createdAt,
+        updatedAt: review.user.updatedAt,
+      }),
     });
   }
 
@@ -156,6 +229,9 @@ export class PrismaReviewRepository implements ReviewRepository {
       where: { id },
       data: {
         deletedAt: new Date(),
+      },
+      include: {
+        user: true,
       },
     });
 
@@ -168,6 +244,16 @@ export class PrismaReviewRepository implements ReviewRepository {
       updatedAt: review.updatedAt,
       deletedAt: review.deletedAt ?? undefined,
       comment: review.comment ?? undefined,
+      createdBy: User.create({
+        id: review.user.id,
+        name: review.user.name,
+        email: review.user.email,
+        nickname: review.user.nickname,
+        image: review.user.avatarUrl ?? undefined,
+        bio: review.user.bio ?? undefined,
+        createdAt: review.user.createdAt,
+        updatedAt: review.user.updatedAt,
+      }),
     });
   }
 }
