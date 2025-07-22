@@ -11,7 +11,7 @@ export class ListsService {
   constructor(
     @Inject('ListRepository')
     private readonly listsRepository: ListRepository,
-  ) {}
+  ) { }
 
   async createList(createListRequestDto: CreateListRequestDto, userId: string): Promise<ListResponseDto> {
     const list = await this.listsRepository.create(createListRequestDto, userId);
@@ -94,5 +94,23 @@ export class ListsService {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
     await this.listsRepository.delete(id, userId);
+  }
+
+  async likeList(id: string, userId: string): Promise<{ message: string }> {
+    const list = await this.listsRepository.findById(id, userId);
+    if (!list) {
+      throw new HttpException('List not found', HttpStatus.NOT_FOUND);
+    }
+    if (await this.listsRepository.alreadyLiked(id, userId)) {
+      await this.listsRepository.unlike(id, userId);
+      return {
+        message: 'List unliked successfully',
+      };
+    } else {
+      await this.listsRepository.like(id, userId);
+      return {
+        message: 'List liked successfully',
+      };
+    }
   }
 }
