@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiBody } from '@nes
 import { CurrentUser } from 'src/auth/decorators/current-user';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { User } from './entities/user.entity';
-import { UserResponseDto } from './dtos/user-response.dto';
+import { ProfileResponseDto, UserResponseDto } from './dtos/user-response.dto';
 import { UsersService } from './users.service';
 import { SearchUsersDto } from './dtos/search-users.dto';
 import { FollowRequestDto } from './dtos/follow.dto';
@@ -20,10 +20,10 @@ export class UsersController {
   @Get('current')
   @ApiCookieAuth()
   @ApiOperation({ summary: 'Get data from current user' })
-  @ApiResponse({ status: 200, description: 'Data from current user' })
+  @ApiResponse({ status: 200, description: 'Data from current user', type: ProfileResponseDto })
   @ApiResponse({ status: 401, description: 'Access token not found.' })
   async getCurrentUser(@CurrentUser() user: User) {
-    return await this.usersService.getUserById(user.id);
+    return await this.usersService.profile(user.id);
   }
 
   @Patch('current')
@@ -68,7 +68,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get data from user by id' })
   @ApiResponse({ status: 200, description: 'Data from user by id', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async getUserById(@Param('id') id: string) {
-    return await this.usersService.getUserById(id);
+  async getUserById(@CurrentUser() user: User, @Param('id') id: string) {
+    return await this.usersService.getUserById(user.id, id);
   }
 }

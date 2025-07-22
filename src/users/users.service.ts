@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { UserRepository } from './interfaces/user-repository.interface';
-import { UserResponseDto, UserSearchResponseDto } from './dtos/user-response.dto';
+import { ProfileResponseDto, UserResponseDto, UserSearchResponseDto } from './dtos/user-response.dto';
 import { ReviewRepository } from 'src/reviews/interfaces/review-repository.interface';
 import { ListRepository } from 'src/lists/interfaces/list-repository.interface';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
@@ -23,7 +23,41 @@ export class UsersService {
     private readonly trackRepository: TrackRepository,
   ) { }
 
-  async getUserById(id: string) {
+  async profile(userId: string) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    const reviews = await this.reviewRepository.findAll(user.id, {
+      limit: 1000000,
+      offset: 0,
+    });
+
+    const lists = await this.listRepository.findAll(
+      {
+        limit: 1000000,
+        offset: 0,
+      },
+      user.id,
+    );
+
+    const tracks = reviews.data.map(review => review.trackId);
+    const tracksWithRatings = await this.trackRepository.findManyByIds(tracks);
+
+    const reviewsWithTrackInfo = reviews.data.map(review => new ReviewWithTrackDto(review, tracksWithRatings.find(track => track.id === review.trackId)!));
+
+    return new ProfileResponseDto(user, {
+      data: reviewsWithTrackInfo,
+      total: reviews.total,
+      limit: reviews.limit,
+      offset: reviews.offset,
+      next: reviews.next,
+      previous: reviews.previous,
+    }, lists);
+  }
+
+  async getUserById(userId: string, id: string) {
     const user = await this.userRepository.findById(id);
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -47,7 +81,9 @@ export class UsersService {
 
     const reviewsWithTrackInfo = reviews.data.map(review => new ReviewWithTrackDto(review, tracksWithRatings.find(track => track.id === review.trackId)!));
 
-    return new UserResponseDto(user, {
+    const isFollowing = await this.userRepository.isFollowing(userId, user.id);
+
+    return new UserResponseDto(user, isFollowing, {
       data: reviewsWithTrackInfo,
       total: reviews.total,
       limit: reviews.limit,
@@ -104,7 +140,9 @@ export class UsersService {
 
     const reviewsWithTrackInfo = reviews.data.map(review => new ReviewWithTrackDto(review, tracksWithRatings.find(track => track.id === review.trackId)!));
 
-    return new UserResponseDto(updatedUser, {
+    const isFollowing = await this.userRepository.isFollowing(userId, updatedUser.id);
+
+    return new UserResponseDto(updatedUser, isFollowing, {
       data: reviewsWithTrackInfo,
       total: reviews.total,
       limit: reviews.limit,

@@ -10,7 +10,7 @@ import { ListResponseDto } from 'src/lists/dto/list-response.dto';
 import { NetworkResponseDto } from './follow.dto';
 import { ReviewWithTrackDto } from 'src/reviews/dtos/review.dto';
 
-export class UserResponseDto {
+export class ProfileResponseDto {
   @ApiProperty({
     description: 'The unique identifier of the user.',
     example: '31exampleuserid12345',
@@ -63,6 +63,12 @@ export class UserResponseDto {
   })
   network: NetworkResponseDto | null;
 
+  @ApiProperty({
+    description: 'Whether the user is following the current user.',
+    example: false,
+  })
+  is_following: boolean;
+
   constructor(user: User, reviews: PaginatedResponse<ReviewWithTrackDto>, lists: PaginatedResponse<List>) {
     const userDto = UserMapper.toDTO(user);
     this.id = userDto.id;
@@ -81,6 +87,19 @@ export class UserResponseDto {
       previous: lists.previous,
     };
     this.network = user.followStats ? new NetworkResponseDto(user.followStats, reviews.total, lists.total) : null;
+  }
+}
+
+export class UserResponseDto extends ProfileResponseDto {
+  @ApiProperty({
+    description: 'Whether the user is following the current user.',
+    example: false,
+  })
+  is_following: boolean;
+
+  constructor(user: User, isFollowing: boolean, reviews: PaginatedResponse<ReviewWithTrackDto>, lists: PaginatedResponse<List>) {
+    super(user, reviews, lists);
+    this.is_following = isFollowing;
   }
 }
 
