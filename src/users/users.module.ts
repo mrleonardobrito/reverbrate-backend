@@ -42,6 +42,6 @@ import { SpotifyAlbumRepository } from 'src/albums/repositories/spotify-album.re
       useClass: PrismaReviewRepository,
     },
   ],
-  exports: [UsersService],
+  exports: [UsersService, 'UserRepository'],
 })
 export class UsersModule { }
