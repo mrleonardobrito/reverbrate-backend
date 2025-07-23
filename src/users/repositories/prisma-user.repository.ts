@@ -156,4 +156,21 @@ export class PrismaUserRepository implements UserRepository {
       },
     });
   }
+
+  async findFollowers(userId: string): Promise<string []>{
+    const followersId = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        followers: {
+          select: {
+            followerId: true,
+          },
+        },
+      },
+    });
+    if (!followersId) {
+      return [];
+    }
+    return followersId.followers.map(follower => follower.followerId);
+  }
 }
