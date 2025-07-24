@@ -62,6 +62,10 @@ export class UsersService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
+    if (user.id === userId) {
+      throw new HttpException('You cannot get your own profile', HttpStatus.BAD_REQUEST);
+    }
+
     const reviews = await this.reviewRepository.findAll(user.id, {
       limit: 1000000,
       offset: 0,
