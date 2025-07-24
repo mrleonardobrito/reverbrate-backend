@@ -13,19 +13,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Track {
-  id        String    @id @db.VarChar(50)
-  isrcId    String?   @map("isrc_id") @db.VarChar(20)
+model User {
+  id        String    @id @default(dbgenerated("generate_alphanumeric_id()")) @db.VarChar(5)
+  nickname  String    @db.VarChar(200)
   name      String    @db.VarChar(200)
-  artist    String    @db.VarChar(200)
-  album     String?   @db.VarChar(200)
-  coverUrl  String?   @map("cover_url") @db.Text
+  email     String    @unique @db.VarChar(200)
+  bio       String?   @db.Text
+  isPrivate Boolean   @default(false) @map("is_private")
+  avatarUrl String?   @map("avatar_url") @db.Text
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
   reviews   Review[]
+  lists     List[]
 
-  @@map("tracks")
+  followers Follow[] @relation("follower")
+  following Follow[] @relation("followee")
+
+  followStats UserFollowStats?
+
+  @@index([nickname, id])
+  @@map("users")
 }
 
 model Review {
@@ -37,8 +45,81 @@ model Review {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
-  track     Track     @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, trackId])
   @@map("reviews")
+}
+
+enum ListType {
+  album
+  artist
+  track
+
+  @@map("list_type")
+}
+
+model List {
+  id        String      @id @default(uuid())
+  name      String      @db.VarChar(200)
+  type      ListType
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @default(now()) @map("updated_at")
+  deletedAt DateTime?   @map("deleted_at")
+  items     ListItem[]
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String      @map("user_id") @db.VarChar(50)
+  likes     ListLikes[]
+
+  @@map("lists")
+}
+
+model ListItem {
+  id        String    @id @default(uuid())
+  listId    String    @map("list_id") @db.VarChar(50)
+  itemId    String    @map("item_id") @db.VarChar(50)
+  position  Int       @db.Integer
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  list      List      @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, position])
+  @@unique([listId, itemId])
+  @@map("list_items")
+}
+
+model ListLikes {
+  id        String   @id @default(uuid())
+  listId    String   @map("list_id") @db.VarChar(50)
+  userId    String   @map("user_id") @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  list      List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, userId])
+  @@map("list_likes")
+}
+
+model Follow {
+  followerId String   @map("follower_id")
+  followeeId String   @map("followee_id")
+  followedAt DateTime @default(now()) @map("followed_at")
+
+  follower User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade, map: "fk_follows_follower")
+  followee User @relation("followee", fields: [followeeId], references: [id], onDelete: Cascade, map: "fk_follows_followee")
+
+  @@id([followerId, followeeId], name: "follows_pkey")
+  @@index([followerId], map: "idx_follows_follower")
+  @@index([followeeId], map: "idx_follows_followee")
+  @@map("follows")
+}
+
+model UserFollowStats {
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String @id(map: "user_follow_stats_pkey") @map("user_id")
+  followersCount Int    @default(0) @map("followers_count")
+  followeesCount Int    @default(0) @map("followees_count")
+
+  @@map("user_follow_stats")
 }

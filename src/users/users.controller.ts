@@ -1,28 +1,72 @@
-import { Controller, Get, Query, Res, UseGuards } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiQuery } from "@nestjs/swagger";
-import { CurrentUser } from "src/auth/decorators/current-user";
-import { AuthGuard } from "src/auth/guards/auth.guard";
-import { CurrentUserResponseDto } from "./dtos/current-user-response.dto";
-import { ReviewsService } from "src/reviews/reviews.service";
-import { PaginatedRequest } from "src/common/http/dtos/paginated-request.dto";
-import { UserMapper } from "./mappers/user.mapper";
-import { User } from "./entities/user.entity";
+import { Controller, Get, Param, Patch, Query, UseGuards, Body } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiBody } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/decorators/current-user';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { User } from './entities/user.entity';
+import { ProfileResponseDto, UserResponseDto } from './dtos/user-response.dto';
+import { UsersService } from './users.service';
+import { SearchUsersDto } from './dtos/search-users.dto';
+import { UpdateUserDto } from './dtos/user-request.dto';
 
-@ApiTags('users')
+@ApiTags('Users')
 @Controller('users')
 @UseGuards(AuthGuard)
 export class UsersController {
-    constructor(private readonly reviewsService: ReviewsService) { }
+  constructor(
+    private readonly usersService: UsersService,
+  ) { }
 
-    @Get('current')
-    @ApiCookieAuth()
-    @ApiOperation({ summary: 'Get data from current user' })
-    @ApiQuery({ type: PaginatedRequest })
-    @ApiResponse({ status: 200, description: 'Data from current user', type: CurrentUserResponseDto })
-    @ApiResponse({ status: 401, description: 'Access token not found.' })
-    async getCurrentUser(@CurrentUser() user: User, @Query() query: PaginatedRequest) {
-        const paginatedReviews = await this.reviewsService.getAllReviews(user.id, query);
-        UserMapper.toDTO(user)
-        return new CurrentUserResponseDto(user, paginatedReviews);
-    }
+  @Get('current')
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'Get data from current user' })
+  @ApiResponse({ status: 200, description: 'Data from current user', type: ProfileResponseDto })
+  @ApiResponse({ status: 401, description: 'Access token not found.' })
+  async getCurrentUser(@CurrentUser() user: User) {
+    return await this.usersService.profile(user.id);
+  }
+
+  @Patch('current')
+  @ApiOperation({ summary: 'Update current user' })
+  @ApiResponse({ status: 200, description: 'User updated' })
+  @ApiResponse({ status: 401, description: 'Access token not found.' })
+  async updateCurrentUser(@CurrentUser() user: User, @Body() updateUserDto: UpdateUserDto) {
+    return await this.usersService.updateUser(user.id, updateUserDto);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Search users by nickname or name' })
+  @ApiResponse({ status: 200, description: 'Users found', type: [UserResponseDto] })
+  @ApiResponse({ status: 404, description: 'No users found' })
+  async searchUsers(
+    @Query('query') query: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ) {
+    const searchDto: SearchUsersDto = {
+      query,
+      limit: limit ? Number(limit) : 20,
+      offset: offset ? Number(offset) : 0,
+    };
+    return await this.usersService.searchUser(searchDto);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get data from user by id' })
+  @ApiResponse({ status: 200, description: 'Data from user by id', type: UserResponseDto })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getUserById(@CurrentUser() user: User, @Param('id') id: string) {
+    return await this.usersService.getUserById(user.id, id);
+  }
+
+  @Patch(':id/follow')
+  @ApiOperation({ summary: 'Follow or unfollow a user' })
+  @ApiResponse({ status: 200, description: 'Action completed successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 400, description: 'Invalid action or already following/not following' })
+  async followUser(
+    @CurrentUser() user: User,
+    @Param('id') id: string
+  ) {
+    return await this.usersService.followUser(user.id, id);
+  }
 }
