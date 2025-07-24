@@ -26,34 +26,33 @@ export class SearchService {
   async search(query: SearchRequest, userId: string): Promise<SearchResponse> {
     let searchResults: SearchResponse;
 
+    const getUsersByIds = async (userIds: string[]): Promise<Record<string, any>> => {
+      const uniqueIds = Array.from(new Set(userIds));
+      const users = await Promise.all(uniqueIds.map(id => this.userRepository.findById(id)));
+      return users.reduce((acc, user) => {
+        if (user) acc[user.id] = user;
+        return acc;
+      }, {} as Record<string, any>);
+    };
+
     const toTrackWithNetworkReview = async (tracks: PaginatedResponse<TrackDto>): Promise<PaginatedResponse<TrackWithNetworkReviewDto>> => {
       const trackIds = tracks.data.map(track => track.id);
       const followings = await this.userRepository.findFollowers(userId);
-      
       let networkReviewsRaw: Review[] = [];
       for (const followingId of followings) {
         const reviews = await this.reviewRepository.findManyByUserAndTracks(followingId, trackIds);
         networkReviewsRaw = networkReviewsRaw.concat(reviews);
       }
 
-      let createdBy: ReviewCreatorDto[] = [];
-      for (const review of networkReviewsRaw) {
-        const user = await this.userRepository.findById(review.userId);
-        if (user) {
-          createdBy.push({
-            id: user.id,
-            name: user.name,
-            image: user.image || '',
-          });
-        } 
-      }
-    
+      const userIds = networkReviewsRaw.map(r => r.userId);
+      const usersMap = await getUsersByIds(userIds);
+
       return {
         ...tracks,
         data: await Promise.all(tracks.data.map(async track => {
           const reviewsForTrack = networkReviewsRaw.filter(r => r.trackId === track.id);
-          const network: TrackInfoNetworkDto[] = await Promise.all(reviewsForTrack.map(async review => {
-            const user = await this.userRepository.findById(review.userId);
+          const network: TrackInfoNetworkDto[] = reviewsForTrack.map(review => {
+            const user = usersMap[review.userId];
             const trackEntity = {
               id: track.id,
               name: track.name,
@@ -72,7 +71,7 @@ export class SearchService {
                 image: user?.image || '',
               },
             };
-          }));
+          });
           return {
             id: track.id,
             uri: track.uri,
@@ -87,53 +86,29 @@ export class SearchService {
       };
     };
 
-    if (query.type) {
-      switch (query.type) {
-        case 'artist': {
-          const artists = await this.searchRepository.searchArtist(query);
-          searchResults = {
-            tracks: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-            artists: artists,
-            albums: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-          };
-          break;
-        }
-        case 'track': {
-          const tracks = await this.searchRepository.searchTrack(query);
-          const tracksWithNetwork = await toTrackWithNetworkReview(tracks);
-          searchResults = {
-            tracks: tracksWithNetwork,
-            artists: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-            albums: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-          };
-          await this.searchReviews(searchResults, userId);
-          break;
-        }
-        case 'album': {
-          const album = await this.searchRepository.searchAlbum(query);
-          searchResults = {
-            tracks: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-            artists: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-            albums: album,
-          };
-          break;
-        }
-        default: {
-          const [artists, tracks, album] = await Promise.all([
-            this.searchRepository.searchArtist(query),
-            this.searchRepository.searchTrack(query),
-            this.searchRepository.searchAlbum(query),
-          ]);
-          const tracksWithNetwork = await toTrackWithNetworkReview(tracks);
-          searchResults = {
-            tracks: tracksWithNetwork,
-            artists: artists,
-            albums: album,
-          };
-          await this.searchReviews(searchResults, userId);
-          break;
-        }
-      }
+    if (query.type === 'artist') {
+      const artists = await this.searchRepository.searchArtist(query);
+      searchResults = {
+        tracks: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
+        artists: artists,
+        albums: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
+      };
+    } else if (query.type === 'track') {
+      const tracks = await this.searchRepository.searchTrack(query);
+      const tracksWithNetwork = await toTrackWithNetworkReview(tracks);
+      searchResults = {
+        tracks: tracksWithNetwork,
+        artists: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
+        albums: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
+      };
+      await this.searchReviews(searchResults, userId);
+    } else if (query.type === 'album') {
+      const album = await this.searchRepository.searchAlbum(query);
+      searchResults = {
+        tracks: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
+        artists: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
+        albums: album,
+      };
     } else {
       const [artists, tracks, album] = await Promise.all([
         this.searchRepository.searchArtist(query),
