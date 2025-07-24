@@ -112,5 +112,8 @@ export class AuthService {
       isPrivate: false,
     });
     await this.profileRepository.create(newUser);
+    return {
+      message: 'User created successfully',
+    };
   }
 }

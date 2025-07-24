@@ -79,12 +79,15 @@ export class ListsService {
     };
   }
 
-  async deleteList(id: string, userId: string): Promise<void> {
+  async deleteList(id: string, userId: string): Promise<{ message: string }> {
     const list = await this.listsRepository.findById(id, userId);
     if (!list) {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
     await this.listsRepository.delete(id, userId);
+    return {
+      message: 'List deleted successfully',
+    };
   }
 
   async likeList(id: string, userId: string): Promise<{ message: string }> {
