@@ -11,6 +11,7 @@ export class Track {
   private readonly _image: string;
   private readonly _isrcId: string;
   private readonly _review: Review | null;
+  network: any;
 
   constructor(
     id: string,

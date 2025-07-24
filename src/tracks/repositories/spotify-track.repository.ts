@@ -32,4 +32,5 @@ export class SpotifyTrackRepository implements TrackRepository {
     const tracks = await this.spotify.getTracks(ids);
     return tracks.body.tracks.map(track => SpotifyTrackMapper.toDomain(track));
   }
+
 }

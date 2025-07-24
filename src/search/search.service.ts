@@ -4,12 +4,12 @@ import { ReviewRepository } from 'src/reviews/interfaces/review-repository.inter
 import { SearchRequest } from './dtos/search-request.dto';
 import { SearchResponse } from './dtos/search-response.dto';
 import { SearchRepository } from './repositories/spotify-search.repository';
-import { TrackWithNetworkReviewDto } from './dtos/search-track-with-network.dto';
-import { TrackDto } from 'src/tracks/dtos/track-response.dto';
-import { ReviewCreatorDto, TrackInfoNetworkDto } from 'src/network/dtos/network-review.dto';
+import {
+  TrackWithReviewDto,
+  TrackDto,
+} from 'src/tracks/dtos/track-response.dto';
 import { UserRepository } from 'src/users/interfaces/user-repository.interface';
 import { Review } from 'src/reviews/entities/review.entity';
-import { ReviewDto } from 'src/reviews/dtos/review.dto';
 
 @Injectable()
 export class SearchService {
@@ -20,122 +20,97 @@ export class SearchService {
     private readonly searchRepository: SearchRepository,
     @Inject('ReviewRepository')
     private readonly reviewRepository: ReviewRepository,
-  ) { }
+  ) {}
 
   async search(query: SearchRequest, userId: string): Promise<SearchResponse> {
-    let searchResults: SearchResponse;
+    const emptyResponse = { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null };
 
-    const getUsersByIds = async (userIds: string[]): Promise<Record<string, any>> => {
-      const uniqueIds = Array.from(new Set(userIds));
-      const users = await Promise.all(uniqueIds.map(id => this.userRepository.findById(id)));
-      return users.reduce((acc, user) => {
-        if (user) acc[user.id] = user;
-        return acc;
-      }, {} as Record<string, any>);
-    };
-
-    const toTrackWithNetworkReview = async (tracks: PaginatedResponse<TrackDto>): Promise<PaginatedResponse<TrackWithNetworkReviewDto>> => {
-      const trackIds = tracks.data.map(track => track.id);
-      const followings = await this.userRepository.findFollowers(userId);
-      let networkReviewsRaw: Review[] = [];
-      for (const followingId of followings) {
-        const reviews = await this.reviewRepository.findManyByUserAndTracks(followingId, trackIds);
-        networkReviewsRaw = networkReviewsRaw.concat(reviews);
-      }
-
-      const userIds = networkReviewsRaw.map(r => r.userId);
-      const usersMap = await getUsersByIds(userIds);
-
-      return {
-        ...tracks,
-        data: await Promise.all(tracks.data.map(async track => {
-          const reviewsForTrack = networkReviewsRaw.filter(r => r.trackId === track.id);
-          const network: TrackInfoNetworkDto[] = reviewsForTrack.map(review => {
-            const user = usersMap[review.userId];
-            const trackEntity = {
-              id: track.id,
-              name: track.name,
-              artist: track.artist_name,
-              album: '',
-              uri: track.uri,
-              image: track.cover,
-              isrcId: '',
-            };
-            const reviewResumed = new ReviewDto(review);
-            return {
-              review: reviewResumed,
-              createdDBy: {
-                id: user?.id || '',
-                name: user?.name || '',
-                image: user?.image || '',
-              },
-            };
-          });
-          return {
-            id: track.id,
-            uri: track.uri,
-            type: track.type,
-            name: track.name,
-            artist_name: track.artist_name,
-            cover: track.cover,
-            review: null,
-            network,
-          };
-        })),
-      };
+    const fetchAndEnrichTracks = async () => {
+        const tracks = await this.searchRepository.searchTrack(query);
+        return this.enrichTracksWithReviews(tracks, userId);
     };
 
     if (query.type === 'artist') {
       const artists = await this.searchRepository.searchArtist(query);
-      searchResults = {
-        tracks: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-        artists: artists,
-        albums: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-      };
-    } else if (query.type === 'track') {
-      const tracks = await this.searchRepository.searchTrack(query);
-      const tracksWithNetwork = await toTrackWithNetworkReview(tracks);
-      searchResults = {
-        tracks: tracksWithNetwork,
-        artists: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-        albums: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-      };
-      await this.searchReviews(searchResults, userId);
-    } else if (query.type === 'album') {
-      const album = await this.searchRepository.searchAlbum(query);
-      searchResults = {
-        tracks: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-        artists: { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null },
-        albums: album,
-      };
-    } else {
-      const [artists, tracks, album] = await Promise.all([
-        this.searchRepository.searchArtist(query),
-        this.searchRepository.searchTrack(query),
-        this.searchRepository.searchAlbum(query),
-      ]);
-      const tracksWithNetwork = await toTrackWithNetworkReview(tracks);
-      searchResults = {
-        tracks: tracksWithNetwork,
-        artists: artists,
-        albums: album,
-      };
-      await this.searchReviews(searchResults, userId);
+      return { tracks: emptyResponse, artists, albums: emptyResponse };
     }
-    return searchResults;
+
+    if (query.type === 'track') {
+      const tracksWithReview = await fetchAndEnrichTracks();
+      return { tracks: tracksWithReview, artists: emptyResponse, albums: emptyResponse };
+    }
+
+    if (query.type === 'album') {
+      const albums = await this.searchRepository.searchAlbum(query);
+      return { tracks: emptyResponse, artists: emptyResponse, albums };
+    }
+
+    const [artists, albums, tracksWithReview] = await Promise.all([
+      this.searchRepository.searchArtist(query),
+      this.searchRepository.searchAlbum(query),
+      fetchAndEnrichTracks(),
+    ]);
+
+    return { tracks: tracksWithReview, artists, albums };
   }
 
-  private async searchReviews(searchResults: SearchResponse, userId: string): Promise<void> {
-    const trackIds: string[] = searchResults.tracks.data.map(track => track.id);
-    if (trackIds.length === 0) {
-      return;
+  private async enrichTracksWithReviews(
+    tracks: PaginatedResponse<TrackDto>,
+    userId: string,
+  ): Promise<PaginatedResponse<TrackWithReviewDto>> {
+    if (tracks.data.length === 0) {
+        return tracks as any;
     }
-    const userReviews = await this.reviewRepository.findManyByUserAndTracks(userId, trackIds);
-    const reviewsMap = new Map(userReviews.map(review => [review.trackId, review]));
 
-    searchResults.tracks.data = searchResults.tracks.data.map(track => ({
-      ...track,
-      review: reviewsMap.get(track.id) ? new ReviewDto(reviewsMap.get(track.id)!) : null,
-    }));
+    const trackIds = tracks.data.map((t) => t.id);
+    const userReviewsMap = await this.getUserReviewsMap(userId, trackIds);
+    return this.attachNetworkReviews(tracks, userReviewsMap, userId);
+  }
+
+  private async getUserReviewsMap(
+    userId: string,
+    trackIds: string[],
+  ): Promise<Map<string, Review>> {
+    if (trackIds.length === 0) return new Map();
+    const userReviews = await this.reviewRepository.findManyByUserAndTracks(
+      userId,
+      trackIds,
+    );
+    return new Map(userReviews.map((r) => [r.trackId, r]));
+  }
+
+  private async attachNetworkReviews(
+    tracks: PaginatedResponse<TrackDto>,
+    userReviewsMap: Map<string, Review>,
+    userId: string,
+  ): Promise<PaginatedResponse<TrackWithReviewDto>> {
+    const trackIds = tracks.data.map((track) => track.id);
+    const followings = await this.userRepository.findFollowers(userId);
+    
+    let networkReviewsRaw: Review[] = [];
+    for (const follower of followings) {
+        const reviews = await this.reviewRepository.findManyByUserAndTracks(
+            follower.id, 
+            trackIds,
+        );
+        networkReviewsRaw = networkReviewsRaw.concat(reviews);
+    }
+    
+    const networkReviewsByTrackId = new Map<string, Review[]>();
+    for (const review of networkReviewsRaw) {
+        if (!networkReviewsByTrackId.has(review.trackId)) {
+            networkReviewsByTrackId.set(review.trackId, []);
+        }
+        networkReviewsByTrackId.get(review.trackId)!.push(review);
+    }
+
+    return {
+      ...tracks,
+      data: tracks.data.map((track) => {
+        const userReview = userReviewsMap.get(track.id) || null;
+        const networkReviews = networkReviewsByTrackId.get(track.id) || [];
+        return new TrackWithReviewDto(track, userReview, networkReviews);
+      }),
+    };
   }
 }

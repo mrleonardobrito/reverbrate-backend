@@ -11,7 +11,7 @@ import {
   IsObject,
   IsUUID,
 } from 'class-validator';
-import { TrackResumedDto } from 'src/tracks/dtos/track-response.dto';
+import { TrackDto, TrackResumedDto } from 'src/tracks/dtos/track-response.dto';
 import { Review } from '../entities/review.entity';
 import { Track } from 'src/tracks/entities/track.entity';
 import { CreatedByResponseDto } from 'src/users/dtos/user-response.dto';
@@ -74,9 +74,9 @@ export class ReviewWithTrackDto extends ReviewDto {
   @IsNotEmpty()
   @IsString()
   track_info: TrackResumedDto;
-
+  
   constructor(review: Review, track: Track) {
     super(review);
-    this.track_info = new TrackResumedDto(track);
+    this.track_info = new TrackResumedDto(new TrackDto(track));
   }
 }

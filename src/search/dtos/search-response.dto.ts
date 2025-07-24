@@ -3,10 +3,11 @@ import { AlbumDto } from 'src/albums/dtos/search-album.dto';
 import { ArtistDto } from 'src/artists/dtos/search-artist.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { TrackWithNetworkReviewDto } from './search-track-with-network.dto';
+import { TrackWithReviewDto } from 'src/tracks/dtos/track-response.dto';
 
 export class SearchResponse {
-  @ApiProperty({ type: PaginatedResponse<TrackWithNetworkReviewDto> })
-  tracks: PaginatedResponse<TrackWithNetworkReviewDto>;
+  @ApiProperty({ type: PaginatedResponse<TrackWithReviewDto> })
+  tracks: PaginatedResponse<TrackWithReviewDto>;
 
   @ApiProperty({ type: PaginatedResponse<ArtistDto> })
   artists: PaginatedResponse<ArtistDto>;
@@ -15,7 +16,7 @@ export class SearchResponse {
   albums: PaginatedResponse<AlbumDto>;
 
   constructor(
-    tracks: PaginatedResponse<TrackWithNetworkReviewDto>,
+    tracks: PaginatedResponse<TrackWithReviewDto>,
     artists: PaginatedResponse<ArtistDto>,
     albums: PaginatedResponse<AlbumDto>,
   ) {
