@@ -11,11 +11,9 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  app.enableCors({
-    origin: ['http://127.0.0.1:3000', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
-  });
+  const corsConfig = configService.get('security.cors');
+  app.enableCors(corsConfig);
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const config = new DocumentBuilder()
@@ -39,7 +37,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  const port = configService.get<number>('BACKEND_PORT') || 5000;
+  const port = configService.get<number>('server.port') || 3001;
   await app.listen(port, '0.0.0.0');
 }
 bootstrap();
