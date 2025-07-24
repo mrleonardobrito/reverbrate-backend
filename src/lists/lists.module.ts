@@ -36,4 +36,4 @@ import { SpotifyAlbumRepository } from 'src/albums/repositories/spotify-album.re
   ],
   exports: [ListsService],
 })
-export class ListsModule {}
+export class ListsModule { }
