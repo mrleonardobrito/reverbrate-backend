@@ -13,7 +13,7 @@ export class AlbumsService {
     private readonly albumRepository: AlbumRepository,
     @Inject('ReviewRepository')
     private readonly reviewRepository: ReviewRepository,
-  ) {}
+  ) { }
 
   async findById(userId: string, id: string): Promise<AlbumDto> {
     const album = await this.albumRepository.findById(id);
@@ -31,7 +31,9 @@ export class AlbumsService {
         id: track.id,
         name: track.name,
         artist: track.artist,
+        artist_uri: track.artist_uri,
         album: track.album,
+        album_uri: track.album_uri,
         uri: track.uri,
         image: track.image,
         isrcId: track.isrcId,

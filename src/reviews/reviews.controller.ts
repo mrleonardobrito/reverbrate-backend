@@ -5,7 +5,7 @@ import { CreateReviewDto } from './dtos/create-review.dto';
 import { CurrentUser } from 'src/auth/decorators/current-user';
 import { CreateReviewResponseDto } from './dtos/create-review.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { ReviewResumedDto } from './dtos/review.dto';
+import { ReviewWithTrackDto } from './dtos/review.dto';
 import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { User } from 'src/users/entities/user.entity';
@@ -15,7 +15,7 @@ import { User } from 'src/users/entities/user.entity';
 @UseGuards(AuthGuard)
 @Controller('reviews')
 export class ReviewsController {
-  constructor(private readonly reviewsService: ReviewsService) {}
+  constructor(private readonly reviewsService: ReviewsService) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a review for a track' })
@@ -27,18 +27,18 @@ export class ReviewsController {
   @Get()
   @ApiOperation({ summary: 'Get all reviews' })
   @ApiQuery({ type: PaginatedRequest })
-  @ApiResponse({ type: PaginatedResponse<ReviewResumedDto> })
+  @ApiResponse({ type: PaginatedResponse<ReviewWithTrackDto> })
   async getAllReviews(
     @CurrentUser() user: User,
     @Query() query: PaginatedRequest,
-  ): Promise<PaginatedResponse<ReviewResumedDto>> {
+  ): Promise<PaginatedResponse<ReviewWithTrackDto>> {
     return await this.reviewsService.getAllReviews(user.id, query);
   }
 
   @Get(':track_id')
   @ApiOperation({ summary: 'Get a review by track id' })
   @ApiParam({ name: 'track_id', type: String, required: true })
-  async getReviewByTrackId(@CurrentUser() user: User, @Param('track_id') track_id: string): Promise<ReviewResumedDto> {
+  async getReviewByTrackId(@CurrentUser() user: User, @Param('track_id') track_id: string): Promise<ReviewWithTrackDto> {
     return await this.reviewsService.getReviewByTrackId(user.id, track_id);
   }
 

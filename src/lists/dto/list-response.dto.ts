@@ -3,6 +3,7 @@ import { ArtistDto } from 'src/artists/dtos/artists-response.dto';
 import { AlbumDto } from 'src/albums/dtos/albums-response.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { List } from '../entities/list.entity';
+import { CreatedByResponseDto } from 'src/users/dtos/user-response.dto';
 
 export type ListItemResponseDto = TrackWithReviewDto | ArtistDto | AlbumDto;
 
@@ -34,6 +35,7 @@ export class ListResponseDto {
         type: 'track',
       },
     ],
+    type: () => [Object],
   })
   items: ListItemResponseDto[];
 
@@ -52,8 +54,16 @@ export class ListResponseDto {
   @ApiProperty({
     description: 'The deletion date of the list.',
     example: '2021-01-01',
+    nullable: true,
   })
   deleted_at: Date | null;
+
+  @ApiProperty({
+    description: 'The user who created the list.',
+    example: 'John Doe',
+    type: () => CreatedByResponseDto,
+  })
+  created_by: CreatedByResponseDto;
 
   constructor(list: List, items: ListItemResponseDto[]) {
     this.id = list.id;
@@ -63,5 +73,19 @@ export class ListResponseDto {
     this.created_at = list.createdAt;
     this.updated_at = list.updatedAt;
     this.deleted_at = list.deletedAt ?? null;
+    this.created_by = new CreatedByResponseDto(list.createdBy);
+  }
+}
+
+export class ListWithIsLikedResponseDto extends ListResponseDto {
+  @ApiProperty({
+    description: 'Whether the list is liked by the current user.',
+    example: false,
+  })
+  is_liked: boolean;
+
+  constructor(list: List, items: ListItemResponseDto[], isLiked: boolean) {
+    super(list, items);
+    this.is_liked = isLiked;
   }
 }

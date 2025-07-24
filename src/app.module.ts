@@ -11,6 +11,7 @@ import { ArtistsModule } from './artists/artists.module';
 import { ListsController } from './lists/lists.controller';
 import { ListsModule } from './lists/lists.module';
 import { TracksModule } from './tracks/tracks.module';
+import { RankingsModule } from './rankings/rankings.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { TracksModule } from './tracks/tracks.module';
     ArtistsModule,
     ListsModule,
     TracksModule,
+    RankingsModule,
   ],
   controllers: [ListsController],
 })

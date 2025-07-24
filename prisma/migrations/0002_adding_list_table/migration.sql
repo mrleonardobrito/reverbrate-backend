@@ -10,6 +10,17 @@ CREATE TABLE "lists" (
     CONSTRAINT "lists_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "lists_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE TABLE "list_likes" (
+    "id" TEXT NOT NULL,
+    "list_id" VARCHAR(50) NOT NULL,
+    "user_id" VARCHAR(50) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "list_likes_pkey" PRIMARY KEY ("id")
+);
+CREATE UNIQUE INDEX "list_likes_list_id_user_id_key" ON "list_likes"("list_id", "user_id");
+ALTER TABLE "list_likes"
+ADD CONSTRAINT "list_likes_list_id_fkey" FOREIGN KEY ("list_id") REFERENCES "lists"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 CREATE TABLE "list_items" (
     "id" TEXT NOT NULL,
     "list_id" VARCHAR(50) NOT NULL,

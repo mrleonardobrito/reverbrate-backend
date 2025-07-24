@@ -9,6 +9,7 @@ import { AlbumRepository } from 'src/albums/interfaces/album-repository.interfac
 import { CreateListRequestDto, UpdateListRequestDto } from '../dto/list-request.dto';
 import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class PrismaListsRepository implements ListRepository {
@@ -37,7 +38,12 @@ export class PrismaListsRepository implements ListRepository {
         type: list.type,
         userId: userId,
       },
+      include: {
+        user: true,
+      },
     });
+
+    const isLiked = await this.alreadyLiked(prismaList.id, userId);
 
     return List.create({
       id: prismaList.id,
@@ -47,12 +53,27 @@ export class PrismaListsRepository implements ListRepository {
       createdAt: prismaList.createdAt,
       updatedAt: prismaList.updatedAt,
       deletedAt: prismaList.deletedAt ?? null,
+      createdBy: User.create({
+        id: prismaList.user.id,
+        name: prismaList.user.name,
+        nickname: prismaList.user.nickname,
+        email: prismaList.user.email,
+        image: prismaList.user.avatarUrl ?? undefined,
+        bio: prismaList.user.bio ?? undefined,
+        createdAt: prismaList.user.createdAt,
+        updatedAt: prismaList.user.updatedAt,
+        deletedAt: prismaList.user.deletedAt ?? undefined,
+      }),
+      isLiked,
     });
   }
 
-  async findById(id: string): Promise<List | null> {
+  async findById(id: string, userId: string): Promise<List | null> {
     const prismaList = await this.prisma.list.findUnique({
       where: { id },
+      include: {
+        user: true,
+      },
     });
 
     if (!prismaList) return null;
@@ -60,6 +81,8 @@ export class PrismaListsRepository implements ListRepository {
     const prismaItems = await this.prisma.listItem.findMany({
       where: { listId: prismaList.id },
     });
+
+    const isLiked = await this.alreadyLiked(prismaList.id, userId);
 
     const type = prismaList.type as ListType;
     let items: ListItem[] = [];
@@ -74,6 +97,18 @@ export class PrismaListsRepository implements ListRepository {
         createdAt: prismaList.createdAt,
         updatedAt: prismaList.updatedAt,
         deletedAt: prismaList.deletedAt ?? null,
+        createdBy: User.create({
+          id: prismaList.user.id,
+          name: prismaList.user.name,
+          nickname: prismaList.user.nickname,
+          email: prismaList.user.email,
+          image: prismaList.user.avatarUrl ?? undefined,
+          bio: prismaList.user.bio ?? undefined,
+          createdAt: prismaList.user.createdAt,
+          updatedAt: prismaList.user.updatedAt,
+          deletedAt: prismaList.user.deletedAt ?? undefined,
+        }),
+        isLiked,
       });
     }
 
@@ -99,10 +134,22 @@ export class PrismaListsRepository implements ListRepository {
       updatedAt: prismaList.updatedAt,
       deletedAt: prismaList.deletedAt ?? null,
       items,
+      createdBy: User.create({
+        id: prismaList.user.id,
+        name: prismaList.user.name,
+        nickname: prismaList.user.nickname,
+        email: prismaList.user.email,
+        image: prismaList.user.avatarUrl ?? undefined,
+        bio: prismaList.user.bio ?? undefined,
+        createdAt: prismaList.user.createdAt,
+        updatedAt: prismaList.user.updatedAt,
+        deletedAt: prismaList.user.deletedAt ?? undefined,
+      }),
+      isLiked,
     });
   }
 
-  async addItem(listId: string, itemId: string): Promise<void> {
+  async addItem(listId: string, itemId: string, userId: string): Promise<void> {
     const existingItem = await this.prisma.listItem.findUnique({
       where: {
         listId_itemId: {
@@ -167,8 +214,8 @@ export class PrismaListsRepository implements ListRepository {
     }
   }
 
-  async update(listId: string, updateListDto: UpdateListRequestDto): Promise<List> {
-    const list = await this.findById(listId);
+  async update(listId: string, updateListDto: UpdateListRequestDto, userId: string): Promise<List> {
+    const list = await this.findById(listId, userId);
     if (!list) {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
@@ -199,6 +246,8 @@ export class PrismaListsRepository implements ListRepository {
       }
     }
 
+    const isLiked = await this.alreadyLiked(updatedList.id, userId);
+
     return List.create({
       id: updatedList.id,
       name: updatedList.name,
@@ -207,13 +256,16 @@ export class PrismaListsRepository implements ListRepository {
       createdAt: list.createdAt,
       updatedAt: list.updatedAt,
       deletedAt: list.deletedAt ?? null,
+      createdBy: list.createdBy,
+      isLiked,
     });
   }
 
-  async findAll(paginatedRequest: PaginatedRequest): Promise<PaginatedResponse<List>> {
+  async findAll(paginatedRequest: PaginatedRequest, userId: string): Promise<PaginatedResponse<List>> {
     const prismaLists = await this.prisma.list.findMany({
       where: {
         deletedAt: null,
+        userId: userId,
       },
       include: {
         items: {
@@ -221,6 +273,7 @@ export class PrismaListsRepository implements ListRepository {
             position: 'asc',
           },
         },
+        user: true,
       },
     });
 
@@ -243,6 +296,8 @@ export class PrismaListsRepository implements ListRepository {
           }
         }
 
+        const isLiked = await this.alreadyLiked(prismaList.id, userId);
+
         return List.create({
           id: prismaList.id,
           name: prismaList.name,
@@ -251,6 +306,18 @@ export class PrismaListsRepository implements ListRepository {
           createdAt: prismaList.createdAt,
           updatedAt: prismaList.updatedAt,
           deletedAt: prismaList.deletedAt ?? null,
+          createdBy: User.create({
+            id: prismaList.user.id,
+            name: prismaList.user.name,
+            nickname: prismaList.user.nickname,
+            email: prismaList.user.email,
+            image: prismaList.user.avatarUrl ?? undefined,
+            bio: prismaList.user.bio ?? undefined,
+            createdAt: prismaList.user.createdAt,
+            updatedAt: prismaList.user.updatedAt,
+            deletedAt: prismaList.user.deletedAt ?? undefined,
+          }),
+          isLiked,
         });
       }),
     );
@@ -270,5 +337,24 @@ export class PrismaListsRepository implements ListRepository {
       where: { id },
       data: { deletedAt: new Date() },
     });
+  }
+
+  async like(id: string, userId: string): Promise<void> {
+    await this.prisma.listLikes.create({
+      data: { listId: id, userId },
+    });
+  }
+
+  async unlike(id: string, userId: string): Promise<void> {
+    await this.prisma.listLikes.delete({
+      where: { listId_userId: { listId: id, userId } },
+    });
+  }
+
+  async alreadyLiked(id: string, userId: string): Promise<boolean> {
+    const like = await this.prisma.listLikes.findUnique({
+      where: { listId_userId: { listId: id, userId } },
+    });
+    return !!like;
   }
 }

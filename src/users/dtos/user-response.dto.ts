@@ -1,15 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FollowStats, User } from '../entities/user.entity';
+import { User } from '../entities/user.entity';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
-import { Review } from 'src/reviews/entities/review.entity';
 import { UserMapper } from '../mappers/user.mapper';
-import { ReviewMapper } from 'src/reviews/mappers/review.mapper';
 import { ReviewDto } from 'src/reviews/dtos/review.dto';
 import { List } from 'src/lists/entities/list.entity';
-import { ListResponseDto } from 'src/lists/dto/list-response.dto';
-import { NetworkResponseDto } from './follow.dto';
+import { ListResponseDto, ListWithIsLikedResponseDto } from 'src/lists/dto/list-response.dto';
+import { NetworkResponseDto } from './network.dto';
+import { ReviewWithTrackDto } from 'src/reviews/dtos/review.dto';
+import { Review } from 'src/reviews/entities/review.entity';
 
-export class UserResponseDto {
+export class ProfileResponseDto {
   @ApiProperty({
     description: 'The unique identifier of the user.',
     example: '31exampleuserid12345',
@@ -27,7 +27,6 @@ export class UserResponseDto {
     example: 'carlos.silva',
   })
   nickname: string;
-
 
   @ApiProperty({
     description: 'The email address of the user.',
@@ -49,20 +48,30 @@ export class UserResponseDto {
 
   @ApiProperty({
     description: 'A paginated list of reviews made by the user.',
+    type: () => PaginatedResponse<ReviewDto>,
   })
   reviews: PaginatedResponse<ReviewDto>;
 
   @ApiProperty({
     description: 'A paginated list of lists created by the user.',
+    type: () => PaginatedResponse<ListResponseDto>,
   })
-  lists: PaginatedResponse<ListResponseDto>;
+  lists: PaginatedResponse<ListWithIsLikedResponseDto>;
 
   @ApiProperty({
     description: 'The follow info of the user.',
+    type: () => NetworkResponseDto,
+    nullable: true,
   })
   network: NetworkResponseDto | null;
 
-  constructor(user: User, reviews: PaginatedResponse<Review>, lists: PaginatedResponse<List>) {
+  @ApiProperty({
+    description: 'Whether the user is following the current user.',
+    example: false,
+  })
+  is_following: boolean;
+
+  constructor(user: User, reviews: PaginatedResponse<ReviewWithTrackDto>, lists: PaginatedResponse<List>) {
     const userDto = UserMapper.toDTO(user);
     this.id = userDto.id;
     this.name = userDto.name;
@@ -70,16 +79,9 @@ export class UserResponseDto {
     this.image = userDto.image || '';
     this.nickname = user.nickname;
     this.bio = user.bio || '';
-    this.reviews = {
-      data: reviews.data.map(review => ReviewMapper.toDto(review)),
-      total: reviews.total,
-      limit: reviews.limit,
-      offset: reviews.offset,
-      next: reviews.next,
-      previous: reviews.previous,
-    };
+    this.reviews = reviews;
     this.lists = {
-      data: lists.data.map(list => new ListResponseDto(list, [])),
+      data: lists.data.map(list => new ListWithIsLikedResponseDto(list, [], list.isLiked)),
       total: lists.total,
       limit: lists.limit,
       offset: lists.offset,
@@ -87,6 +89,99 @@ export class UserResponseDto {
       previous: lists.previous,
     };
     this.network = user.followStats ? new NetworkResponseDto(user.followStats, reviews.total, lists.total) : null;
+  }
+}
+
+export class UserResponseDto extends ProfileResponseDto {
+  @ApiProperty({
+    description: 'Whether the user is following the current user.',
+    example: false,
+  })
+  is_following: boolean;
+
+  constructor(user: User, isFollowing: boolean, reviews: PaginatedResponse<ReviewWithTrackDto>, lists: PaginatedResponse<List>) {
+    super(user, reviews, lists);
+    this.is_following = isFollowing;
+  }
+}
+
+export class CreatedByResponseDto {
+  @ApiProperty({
+    description: 'The unique identifier of the user.',
+    example: '31exampleuserid12345',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: 'The URL of the user\'s profile image.',
+    example: 'https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228',
+  })
+  image: string;
+
+  @ApiProperty({
+    description: 'The public display name of the user.',
+    example: 'Carlos Silva',
+  })
+  name: string;
+
+  @ApiProperty({
+    description: 'The nickname of the user.',
+    example: 'carlos.silva',
+  })
+  nickname: string;
+
+  constructor(user: User) {
+    this.id = user.id;
+    this.image = user.image ?? '';
+    this.name = user.name;
+    this.nickname = user.nickname;
+  }
+}
+
+export class MostFollowedUserResponseDto {
+  @ApiProperty({
+    description: 'The unique identifier of the user.',
+    example: '31exampleuserid12345',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: 'The public display name of the user.',
+    example: 'Carlos Silva',
+  })
+  name: string;
+
+  @ApiProperty({
+    description: 'The URL of the user\'s profile image.',
+    example: 'https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228',
+  })
+  image: string;
+
+  @ApiProperty({
+    description: 'The number of lists created by the user.',
+    example: 10,
+  })
+  followers_count: number;
+
+  @ApiProperty({
+    description: 'The number of reviews created by the user.',
+    example: 10,
+  })
+  reviews_count: number;
+
+  @ApiProperty({
+    description: 'The number of lists created by the user.',
+    example: 10,
+  })
+  lists_count: number;
+
+  constructor(user: User, reviews: Review[], lists: List[]) {
+    this.id = user.id;
+    this.name = user.name;
+    this.image = user.image ?? '';
+    this.followers_count = user.followStats?.followersCount ?? 0;
+    this.reviews_count = reviews.length;
+    this.lists_count = lists.length;
   }
 }
 

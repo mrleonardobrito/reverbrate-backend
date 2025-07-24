@@ -12,4 +12,7 @@ export interface ListRepository {
     removeItem(listId: string, itemId: string, userId: string): Promise<void>;
     findItemById(itemType: ListType, itemId: string): Promise<ListItem | null>;
     delete(id: string, userId: string): Promise<void>;
+    like(id: string, userId: string): Promise<void>;
+    unlike(id: string, userId: string): Promise<void>;
+    alreadyLiked(id: string, userId: string): Promise<boolean>;
 }

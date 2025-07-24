@@ -2,9 +2,11 @@ import { Module } from '@nestjs/common';
 import { SpotifyTrackRepository } from './repositories/spotify-track.repository';
 import { TracksService } from './tracks.service';
 import { PrismaReviewRepository } from 'src/reviews/repositories/prisma-review.repository';
+import { TracksController } from './tracks.controller';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [],
+  imports: [AuthModule],
   providers: [
     TracksService,
     {
@@ -17,5 +19,6 @@ import { PrismaReviewRepository } from 'src/reviews/repositories/prisma-review.r
     },
   ],
   exports: [TracksService],
+  controllers: [TracksController],
 })
-export class TracksModule {}
+export class TracksModule { }

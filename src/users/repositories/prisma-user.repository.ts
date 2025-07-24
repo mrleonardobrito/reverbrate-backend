@@ -4,6 +4,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { FollowStats, User } from '../entities/user.entity';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { Prisma } from '@prisma/client';
+import { UpdateUserDto } from '../dtos/user-request.dto';
+import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 
 interface SearchUserOptions {
   limit?: number;
@@ -130,6 +132,17 @@ export class PrismaUserRepository implements UserRepository {
     };
   }
 
+  async updateUser(userId: string, updateUserDto: UpdateUserDto): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: updateUserDto.name,
+        bio: updateUserDto.bio,
+        isPrivate: updateUserDto.is_private,
+      },
+    });
+  }
+
   async followUser(userId: string, followeeId: string): Promise<void> {
     await this.prisma.follow.create({
       data: {
@@ -172,5 +185,35 @@ export class PrismaUserRepository implements UserRepository {
       return [];
     }
     return followersId.followers.map(follower => follower.followerId);
+  }
+  
+  async findMostFollowedUsers(query: PaginatedRequest): Promise<PaginatedResponse<User>> {
+    const { limit, offset } = query;
+    const users = await this.prisma.user.findMany({
+      orderBy: { followStats: { followersCount: 'desc' } },
+      skip: offset,
+      take: limit,
+    });
+
+    const total = await this.prisma.user.count();
+
+    return {
+      data: users.map((user) => User.create({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        nickname: user.nickname,
+        isPrivate: user.isPrivate,
+        image: user.avatarUrl ?? '',
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        deletedAt: user.deletedAt ?? undefined,
+      })),
+      total,
+      limit,
+      offset,
+      next: offset + limit < total ? String(offset + limit) : null,
+      previous: offset > 0 ? String(Math.max(offset - limit, 0)) : null,
+    };
   }
 }

@@ -25,7 +25,7 @@ import { User } from '@prisma/client';
 @ApiTags('Lists')
 @UseGuards(AuthGuard)
 export class ListsController {
-  constructor(private readonly listsService: ListsService) {}
+  constructor(private readonly listsService: ListsService) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a new list' })
@@ -90,5 +90,14 @@ export class ListsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async deleteList(@Param('id') id: string, @CurrentUser() user: User) {
     return this.listsService.deleteList(id, user.id);
+  }
+
+  @Patch(':id/like')
+  @ApiOperation({ summary: 'Like and unlike a list' })
+  @ApiParam({ name: 'id', type: String, description: 'The id of the list' })
+  @ApiResponse({ status: 200, description: 'List liked successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async likeList(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.listsService.likeList(id, user.id);
   }
 }

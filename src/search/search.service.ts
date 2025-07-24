@@ -1,7 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { ReviewRepository } from 'src/reviews/interfaces/review-repository.interface';
-import { ReviewMapper } from 'src/reviews/mappers/review.mapper';
 import { SearchRequest } from './dtos/search-request.dto';
 import { SearchResponse } from './dtos/search-response.dto';
 import { SearchRepository } from './repositories/spotify-search.repository';
@@ -10,7 +9,7 @@ import { TrackDto } from 'src/tracks/dtos/track-response.dto';
 import { ReviewCreatorDto, TrackInfoNetworkDto } from 'src/network/dtos/network-review.dto';
 import { UserRepository } from 'src/users/interfaces/user-repository.interface';
 import { Review } from 'src/reviews/entities/review.entity';
-
+import { ReviewDto } from 'src/reviews/dtos/review.dto';
 
 @Injectable()
 export class SearchService {
@@ -21,7 +20,7 @@ export class SearchService {
     private readonly searchRepository: SearchRepository,
     @Inject('ReviewRepository')
     private readonly reviewRepository: ReviewRepository,
-  ) {}
+  ) { }
 
   async search(query: SearchRequest, userId: string): Promise<SearchResponse> {
     let searchResults: SearchResponse;
@@ -62,7 +61,7 @@ export class SearchService {
               image: track.cover,
               isrcId: '',
             };
-            const reviewResumed = new (require('src/reviews/dtos/review.dto').ReviewResumedDto)(review, trackEntity);
+            const reviewResumed = new ReviewDto(review);
             return {
               review: reviewResumed,
               createdDBy: {
@@ -133,11 +132,10 @@ export class SearchService {
     }
     const userReviews = await this.reviewRepository.findManyByUserAndTracks(userId, trackIds);
     const reviewsMap = new Map(userReviews.map(review => [review.trackId, review]));
-    searchResults.tracks.data = searchResults.tracks.data.map(trackWithNetwork => ({
-      ...trackWithNetwork,
-      review: reviewsMap.get(trackWithNetwork.id)
-        ? ReviewMapper.toDto(reviewsMap.get(trackWithNetwork.id)!)
-        : null,
+
+    searchResults.tracks.data = searchResults.tracks.data.map(track => ({
+      ...track,
+      review: reviewsMap.get(track.id) ? new ReviewDto(reviewsMap.get(track.id)!) : null,
     }));
   }
 }

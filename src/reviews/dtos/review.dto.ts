@@ -14,6 +14,7 @@ import {
 import { TrackResumedDto } from 'src/tracks/dtos/track-response.dto';
 import { Review } from '../entities/review.entity';
 import { Track } from 'src/tracks/entities/track.entity';
+import { CreatedByResponseDto } from 'src/users/dtos/user-response.dto';
 
 export class ReviewDto {
   @ApiProperty({
@@ -49,24 +50,23 @@ export class ReviewDto {
   })
   created_at: Date;
 
+  @ApiProperty({
+    description: 'The user who created the review.',
+    example: 'John Doe',
+    type: () => CreatedByResponseDto,
+  })
+  created_by: CreatedByResponseDto;
+
   constructor(review: Review) {
     this.rate = review.rating;
     this.comment = review.comment;
     this.updated_at = review.updatedAt;
     this.created_at = review.createdAt;
+    this.created_by = new CreatedByResponseDto(review.createdBy);
   }
 }
 
-export class ReviewResumedDto {
-  @ApiProperty({
-    description: 'Review id',
-    example: '123',
-  })
-  @IsNotEmpty()
-  @IsString()
-  @IsUUID()
-  id: string;
-
+export class ReviewWithTrackDto extends ReviewDto {
   @ApiProperty({
     description: 'Track information',
     type: TrackResumedDto,
@@ -75,17 +75,8 @@ export class ReviewResumedDto {
   @IsString()
   track_info: TrackResumedDto;
 
-  @ApiProperty({
-    description: 'Review',
-    type: ReviewDto,
-  })
-  @IsNotEmpty()
-  @IsObject()
-  review: ReviewDto;
-
   constructor(review: Review, track: Track) {
-    this.id = review.id;
+    super(review);
     this.track_info = new TrackResumedDto(track);
-    this.review = new ReviewDto(review);
   }
 }

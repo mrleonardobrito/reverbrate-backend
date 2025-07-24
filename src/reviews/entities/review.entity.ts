@@ -1,3 +1,5 @@
+import { User } from "src/users/entities/user.entity";
+
 export class Review {
   private readonly _id: string;
   private readonly _userId: string;
@@ -7,7 +9,7 @@ export class Review {
   private readonly _createdAt: Date;
   private readonly _updatedAt: Date;
   private readonly _deletedAt?: Date;
-
+  private readonly _createdBy: User;
   constructor(
     id: string,
     userId: string,
@@ -15,6 +17,7 @@ export class Review {
     rating: number,
     createdAt: Date,
     updatedAt: Date,
+    createdBy: User,
     deletedAt?: Date,
     comment?: string,
   ) {
@@ -26,6 +29,7 @@ export class Review {
     this._updatedAt = updatedAt;
     this._deletedAt = deletedAt;
     this._comment = comment;
+    this._createdBy = createdBy;
   }
 
   get id() {
@@ -60,6 +64,10 @@ export class Review {
     return this._deletedAt;
   }
 
+  get createdBy() {
+    return this._createdBy;
+  }
+
   static create(props: {
     id: string;
     userId: string;
@@ -67,6 +75,7 @@ export class Review {
     rating: number;
     createdAt: Date;
     updatedAt: Date;
+    createdBy: User;
     deletedAt?: Date;
     comment?: string;
   }) {
@@ -77,6 +86,7 @@ export class Review {
       props.rating,
       props.createdAt,
       props.updatedAt,
+      props.createdBy,
       props.deletedAt,
       props.comment,
     );

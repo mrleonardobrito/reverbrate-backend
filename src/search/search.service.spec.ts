@@ -49,7 +49,7 @@ describe('SearchService', () => {
     userRepository.findFollowers.mockResolvedValue([followingId]);
 
     const paginatedTracks: PaginatedResponse<TrackDto> = {
-      data: [{ id: trackId, uri: 'uri', type: 'track', name: 'Track 1', artist_name: 'Artist', cover: 'cover' }],
+      data: [{ id: trackId, uri: 'uri', type: 'track', name: 'Track 1', artist_name: 'Artist', cover: 'cover', artist_uri: 'artist-uri', album_name: 'Album Name', album_uri: 'album-uri' }],
       total: 1, limit: 1, offset: 0, next: null, previous: null
     };
     searchRepository.searchTrack.mockResolvedValue(paginatedTracks);
@@ -58,6 +58,11 @@ describe('SearchService', () => {
       id: reviewId,
       userId: followingId,
       trackId: trackId,
+      rating: 5,
+      comment: 'Ótima música',
+      updatedAt: new Date('2023-01-01T00:00:00Z'),
+      createdAt: new Date('2023-01-01T00:00:00Z'),
+      createdBy: { id: followingId, name: 'Following', image: 'img.jpg', nickname: 'following_nick' }
     } as any;
     reviewRepository.findManyByUserAndTracks.mockResolvedValue([review]);
 
@@ -74,14 +79,25 @@ describe('SearchService', () => {
       name: 'Following',
       image: 'img.jpg',
     });
-    expect(result.tracks.data[0].network[0].review).toBeDefined();
+    expect(result.tracks.data[0].network[0].review).toMatchObject({
+      rate: expect.any(Number),
+      comment: expect.anything(),
+      updated_at: expect.anything(),
+      created_at: expect.anything(),
+      created_by: {
+        id: followingId,
+        name: 'Following',
+        image: 'img.jpg',
+        nickname: 'following_nick'
+      }
+    });
   });
 
   it('deve retornar network vazia quando o usuário não segue ninguém', async () => {
     const userId = 'user-main';
     userRepository.findFollowers.mockResolvedValue([]);
     const paginatedTracks: PaginatedResponse<TrackDto> = {
-      data: [{ id: 'track-1', uri: 'uri', type: 'track', name: 'Track 1', artist_name: 'Artist', cover: 'cover' }],
+      data: [{ id: 'track-1', uri: 'uri', type: 'track', name: 'Track 1', artist_name: 'Artist', cover: 'cover', artist_uri: 'artist-uri', album_name: 'Album Name', album_uri: 'album-uri' }],
       total: 1, limit: 1, offset: 0, next: null, previous: null
     };
     searchRepository.searchTrack.mockResolvedValue(paginatedTracks);
@@ -97,13 +113,13 @@ describe('SearchService', () => {
     const trackId = 'track-1';
     userRepository.findFollowers.mockResolvedValue(followingIds);
     const paginatedTracks: PaginatedResponse<TrackDto> = {
-      data: [{ id: trackId, uri: 'uri', type: 'track', name: 'Track 1', artist_name: 'Artist', cover: 'cover' }],
+      data: [{ id: trackId, uri: 'uri', type: 'track', name: 'Track 1', artist_name: 'Artist', cover: 'cover', artist_uri: 'artist-uri', album_name: 'Album Name', album_uri: 'album-uri' }],
       total: 1, limit: 1, offset: 0, next: null, previous: null
     };
     searchRepository.searchTrack.mockResolvedValue(paginatedTracks);
     const reviews: Review[] = [
-      { id: 'review-1', userId: 'user-following-1', trackId } as any,
-      { id: 'review-2', userId: 'user-following-2', trackId } as any,
+      { id: 'review-1', userId: 'user-following-1', trackId, createdBy: { id: 'user-following-1', name: 'Name-user-following-1', image: 'user-following-1.jpg', nickname: 'nick1' } } as any,
+      { id: 'review-2', userId: 'user-following-2', trackId, createdBy: { id: 'user-following-2', name: 'Name-user-following-2', image: 'user-following-2.jpg', nickname: 'nick2' } } as any,
     ];
     reviewRepository.findManyByUserAndTracks.mockImplementation((userId: string) => {
       return Promise.resolve(reviews.filter(r => r.userId === userId));
@@ -123,7 +139,7 @@ describe('SearchService', () => {
     const followingIds = ['user-following-1', 'user-following-2'];
     userRepository.findFollowers.mockResolvedValue(followingIds);
     const paginatedTracks: PaginatedResponse<TrackDto> = {
-      data: [{ id: 'track-1', uri: 'uri', type: 'track', name: 'Track 1', artist_name: 'Artist', cover: 'cover' }],
+      data: [{ id: 'track-1', uri: 'uri', type: 'track', name: 'Track 1', artist_name: 'Artist', cover: 'cover', artist_uri: 'artist-uri', album_name: 'Album Name', album_uri: 'album-uri' }],
       total: 1, limit: 1, offset: 0, next: null, previous: null
     };
     searchRepository.searchTrack.mockResolvedValue(paginatedTracks);
@@ -137,7 +153,7 @@ describe('SearchService', () => {
     const userId = undefined as any;
     userRepository.findFollowers.mockResolvedValue([]);
     const paginatedTracks: PaginatedResponse<TrackDto> = {
-      data: [{ id: 'track-1', uri: 'uri', type: 'track', name: 'Track 1', artist_name: 'Artist', cover: 'cover' }],
+      data: [{ id: 'track-1', uri: 'uri', type: 'track', name: 'Track 1', artist_name: 'Artist', cover: 'cover', artist_uri: 'artist-uri', album_name: 'Album Name', album_uri: 'album-uri' }],
       total: 1, limit: 1, offset: 0, next: null, previous: null
     };
     searchRepository.searchTrack.mockResolvedValue(paginatedTracks);

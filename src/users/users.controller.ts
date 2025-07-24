@@ -3,10 +3,10 @@ import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiBody } from '@nes
 import { CurrentUser } from 'src/auth/decorators/current-user';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { User } from './entities/user.entity';
-import { UserResponseDto } from './dtos/user-response.dto';
+import { ProfileResponseDto, UserResponseDto } from './dtos/user-response.dto';
 import { UsersService } from './users.service';
 import { SearchUsersDto } from './dtos/search-users.dto';
-import { FollowRequestDto } from './dtos/follow.dto';
+import { UpdateUserDto } from './dtos/user-request.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -19,10 +19,18 @@ export class UsersController {
   @Get('current')
   @ApiCookieAuth()
   @ApiOperation({ summary: 'Get data from current user' })
-  @ApiResponse({ status: 200, description: 'Data from current user' })
+  @ApiResponse({ status: 200, description: 'Data from current user', type: ProfileResponseDto })
   @ApiResponse({ status: 401, description: 'Access token not found.' })
   async getCurrentUser(@CurrentUser() user: User) {
-    return await this.usersService.getUserById(user.id);
+    return await this.usersService.profile(user.id);
+  }
+
+  @Patch('current')
+  @ApiOperation({ summary: 'Update current user' })
+  @ApiResponse({ status: 200, description: 'User updated' })
+  @ApiResponse({ status: 401, description: 'Access token not found.' })
+  async updateCurrentUser(@CurrentUser() user: User, @Body() updateUserDto: UpdateUserDto) {
+    return await this.usersService.updateUser(user.id, updateUserDto);
   }
 
   @Get('search')
@@ -42,24 +50,23 @@ export class UsersController {
     return await this.usersService.searchUser(searchDto);
   }
 
-  @Patch('follow')
-  @ApiOperation({ summary: 'Follow or unfollow a user' })
-  @ApiResponse({ status: 200, description: 'Action completed successfully' })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiBody({ type: FollowRequestDto })
-  @ApiResponse({ status: 400, description: 'Invalid action or already following/not following' })
-  async followUser(
-    @CurrentUser() user: User,
-    @Body() followRequest: FollowRequestDto
-  ) {
-    return await this.usersService.followUser(user.id, followRequest);
-  }
-
   @Get(':id')
   @ApiOperation({ summary: 'Get data from user by id' })
   @ApiResponse({ status: 200, description: 'Data from user by id', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async getUserById(@Param('id') id: string) {
-    return await this.usersService.getUserById(id);
+  async getUserById(@CurrentUser() user: User, @Param('id') id: string) {
+    return await this.usersService.getUserById(user.id, id);
+  }
+
+  @Patch(':id/follow')
+  @ApiOperation({ summary: 'Follow or unfollow a user' })
+  @ApiResponse({ status: 200, description: 'Action completed successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 400, description: 'Invalid action or already following/not following' })
+  async followUser(
+    @CurrentUser() user: User,
+    @Param('id') id: string
+  ) {
+    return await this.usersService.followUser(user.id, id);
   }
 }
