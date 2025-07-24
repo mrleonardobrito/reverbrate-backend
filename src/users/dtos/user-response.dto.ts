@@ -7,6 +7,7 @@ import { List } from 'src/lists/entities/list.entity';
 import { ListResponseDto, ListWithIsLikedResponseDto } from 'src/lists/dto/list-response.dto';
 import { NetworkResponseDto } from './network.dto';
 import { ReviewWithTrackDto } from 'src/reviews/dtos/review.dto';
+import { Review } from 'src/reviews/entities/review.entity';
 
 export class ProfileResponseDto {
   @ApiProperty({
@@ -134,6 +135,53 @@ export class CreatedByResponseDto {
     this.image = user.image ?? '';
     this.name = user.name;
     this.nickname = user.nickname;
+  }
+}
+
+export class MostFollowedUserResponseDto {
+  @ApiProperty({
+    description: 'The unique identifier of the user.',
+    example: '31exampleuserid12345',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: 'The public display name of the user.',
+    example: 'Carlos Silva',
+  })
+  name: string;
+
+  @ApiProperty({
+    description: 'The URL of the user\'s profile image.',
+    example: 'https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228',
+  })
+  image: string;
+
+  @ApiProperty({
+    description: 'The number of lists created by the user.',
+    example: 10,
+  })
+  followers_count: number;
+
+  @ApiProperty({
+    description: 'The number of reviews created by the user.',
+    example: 10,
+  })
+  reviews_count: number;
+
+  @ApiProperty({
+    description: 'The number of lists created by the user.',
+    example: 10,
+  })
+  lists_count: number;
+
+  constructor(user: User, reviews: Review[], lists: List[]) {
+    this.id = user.id;
+    this.name = user.name;
+    this.image = user.image ?? '';
+    this.followers_count = user.followStats?.followersCount ?? 0;
+    this.reviews_count = reviews.length;
+    this.lists_count = lists.length;
   }
 }
 
