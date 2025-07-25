@@ -57,7 +57,7 @@ export class TrackDto {
     example: 'https://example.com/covers/bohemian-rhapsody.jpg',
   })
   cover: string;
-
+  
   @ApiProperty({
     description: 'The ISRC ID of the track',
     example: 'US-AB-01-0000000000',
@@ -132,16 +132,16 @@ export class TrackResumedDto {
   })
   artist_uri: string;
 
-  constructor(track: TrackDto) {
+  constructor(track: Track) {
     this.id = track.id;
     this.uri = track.uri;
-    this.cover = track.cover;
+    this.cover = track.image;
     this.name = track.name;
-    this.album_name = track.album_name;
+    this.album_name = track.album;
     this.album_uri = track.album_uri;
     this.artist_uri = track.artist_uri;
-    this.artist_name = track.artist_name;
-    this.isrc_id = track.isrc_id;
+    this.artist_name = track.artist;
+    this.isrc_id = track.isrcId;
   }
 }
 
@@ -160,7 +160,7 @@ export class TrackWithReviewDto extends TrackResumedDto {
   network: ReviewDto[];
 
   constructor(
-    track: TrackDto,
+    track: Track,
     userReview: Review | null,
     networkReviews: Review[],
   ) {

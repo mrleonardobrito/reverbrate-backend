@@ -77,6 +77,6 @@ export class ReviewWithTrackDto extends ReviewDto {
   
   constructor(review: Review, track: Track) {
     super(review);
-    this.track_info = new TrackResumedDto(new TrackDto(track));
+    this.track_info = new TrackResumedDto(track);
   }
 }
