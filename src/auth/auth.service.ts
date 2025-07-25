@@ -49,6 +49,7 @@ export class AuthService {
   }
 
   extractToken(req: Request) {
+    console.log(req.cookies);
     const accessToken = req.cookies?.['access_token'] as string | undefined;
     const refreshToken = req.cookies?.['refresh_token'] as string | undefined;
     const expiresIn = req.cookies?.['expires_in'] as number | undefined;
