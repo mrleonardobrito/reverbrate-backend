@@ -6,12 +6,18 @@ import { SpotifyModule } from '../common/http/spotify/spotify.module';
 import { ReviewsModule } from '../reviews/reviews.module';
 import { AuthModule } from '../auth/auth.module';
 import { PrismaReviewRepository } from 'src/reviews/repositories/prisma-review.repository';
+import { UsersModule } from '../users/users.module';
+import { PrismaUserRepository } from 'src/users/repositories/prisma-user.repository';
 
 @Module({
-  imports: [SpotifyModule, ReviewsModule, AuthModule],
+  imports: [SpotifyModule, ReviewsModule, AuthModule, UsersModule],
   controllers: [SearchController],
   providers: [
     SearchService,
+    {
+      provide: 'UserRepository',
+      useClass: PrismaUserRepository,
+    },
     {
       provide: 'SearchRepository',
       useClass: SearchRepository,

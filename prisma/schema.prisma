@@ -1,11 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -14,22 +9,20 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(dbgenerated("generate_alphanumeric_id()")) @db.VarChar(5)
-  nickname  String    @db.VarChar(200)
-  name      String    @db.VarChar(200)
-  email     String    @unique @db.VarChar(200)
-  bio       String?   @db.Text
-  isPrivate Boolean   @default(false) @map("is_private")
-  avatarUrl String?   @map("avatar_url") @db.Text
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  reviews   Review[]
-  lists     List[]
-
-  followers Follow[] @relation("follower")
-  following Follow[] @relation("followee")
-
+  id          String           @id @default(dbgenerated("generate_alphanumeric_id()")) @db.VarChar(5)
+  nickname    String           @db.VarChar(200)
+  name        String           @db.VarChar(200)
+  email       String           @unique @db.VarChar(200)
+  bio         String?
+  isPrivate   Boolean          @default(false) @map("is_private")
+  avatarUrl   String?          @map("avatar_url")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @default(now()) @map("updated_at")
+  deletedAt   DateTime?        @map("deleted_at")
+  following   Follow[]         @relation("followee")
+  followers   Follow[]         @relation("follower")
+  lists       List[]
+  reviews     Review[]
   followStats UserFollowStats?
 
   @@index([nickname, id])
@@ -40,8 +33,8 @@ model Review {
   id        String    @id @default(uuid())
   userId    String    @map("user_id") @db.VarChar(50)
   trackId   String    @map("track_id") @db.VarChar(50)
-  rate      Int       @db.Integer
-  comment   String?   @db.Text
+  rate      Int
+  comment   String?
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -51,25 +44,17 @@ model Review {
   @@map("reviews")
 }
 
-enum ListType {
-  album
-  artist
-  track
-
-  @@map("list_type")
-}
-
 model List {
   id        String      @id @default(uuid())
   name      String      @db.VarChar(200)
   type      ListType
+  userId    String      @map("user_id") @db.VarChar(50)
   createdAt DateTime    @default(now()) @map("created_at")
   updatedAt DateTime    @default(now()) @map("updated_at")
   deletedAt DateTime?   @map("deleted_at")
   items     ListItem[]
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String      @map("user_id") @db.VarChar(50)
   likes     ListLikes[]
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("lists")
 }
@@ -78,7 +63,7 @@ model ListItem {
   id        String    @id @default(uuid())
   listId    String    @map("list_id") @db.VarChar(50)
   itemId    String    @map("item_id") @db.VarChar(50)
-  position  Int       @db.Integer
+  position  Int
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -86,6 +71,8 @@ model ListItem {
 
   @@unique([listId, position])
   @@unique([listId, itemId])
+  @@unique([listId, itemId], map: "list_items_unique_item")
+  @@unique([listId, position], map: "list_items_unique_position")
   @@map("list_items")
 }
 
@@ -105,9 +92,8 @@ model Follow {
   followerId String   @map("follower_id")
   followeeId String   @map("followee_id")
   followedAt DateTime @default(now()) @map("followed_at")
-
-  follower User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade, map: "fk_follows_follower")
-  followee User @relation("followee", fields: [followeeId], references: [id], onDelete: Cascade, map: "fk_follows_followee")
+  followee   User     @relation("followee", fields: [followeeId], references: [id], onDelete: Cascade, map: "fk_follows_followee")
+  follower   User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade, map: "fk_follows_follower")
 
   @@id([followerId, followeeId], name: "follows_pkey")
   @@index([followerId], map: "idx_follows_follower")
@@ -116,10 +102,26 @@ model Follow {
 }
 
 model UserFollowStats {
-  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String @id(map: "user_follow_stats_pkey") @map("user_id")
+  userId         String @id @map("user_id")
   followersCount Int    @default(0) @map("followers_count")
   followeesCount Int    @default(0) @map("followees_count")
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_follow_stats")
+}
+
+view BestTracks {
+  track_id       String  @id @db.VarChar(50)
+  average_rating Decimal @db.Decimal
+  review_count   BigInt
+
+  @@map("vw_best_tracks")
+}
+
+enum ListType {
+  album
+  artist
+  track
+
+  @@map("list_type")
 }
