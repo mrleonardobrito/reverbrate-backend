@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RankingsService } from './rankings.service';
 import { Track } from '../tracks/entities/track.entity';
-import { NotFoundException } from '@nestjs/common';
+import { TrackDto, TrackWithReviewDto } from '../tracks/dtos/track-response.dto';
+import { PaginatedResponse } from '../common/http/dtos/paginated-response.dto';
+import { TrackerMapper } from 'src/tracks/mappers/to-paginated-track.mapper';
 
 const mockRankingRepository = () => ({
   findBestTracksByRatingIds: jest.fn(),
@@ -9,29 +11,22 @@ const mockRankingRepository = () => ({
 
 const mockTrackRepository = () => ({
   findById: jest.fn(),
-  findByIds: jest.fn(),
 });
 
-const mockUserRepository = () => ({
-  findMostFollowedUsers: jest.fn(),
-  findFollowers: jest.fn(),
+const mockSearchService = () => ({
+  enrichTracksWithReviews: jest.fn(),
 });
 
-const mockReviewRepository = () => ({
-  findCountsByUsers: jest.fn(),
-  findByUsers: jest.fn(),
-  findManyByUserAndTracks: jest.fn(),
-});
-
-const mockListRepository = () => ({
-  findCountsByUsers: jest.fn(),
-});
+const mockUserRepository = () => ({});
+const mockReviewRepository = () => ({});
+const mockListRepository = () => ({});
 
 describe('RankingsService', () => {
   let service: RankingsService;
   let rankingRepository: ReturnType<typeof mockRankingRepository>;
   let trackRepository: ReturnType<typeof mockTrackRepository>;
-  
+  let searchService: ReturnType<typeof mockSearchService>;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -41,12 +36,14 @@ describe('RankingsService', () => {
         { provide: 'ListRepository', useFactory: mockListRepository },
         { provide: 'RankingRepository', useFactory: mockRankingRepository },
         { provide: 'TrackRepository', useFactory: mockTrackRepository },
+        { provide: 'SearchService', useFactory: mockSearchService },
       ],
     }).compile();
 
     service = module.get<RankingsService>(RankingsService);
     rankingRepository = module.get('RankingRepository');
     trackRepository = module.get('TrackRepository');
+    searchService = module.get('SearchService');
   });
 
   afterEach(() => {
@@ -58,87 +55,52 @@ describe('RankingsService', () => {
   });
 
   describe('getBestTracksByRating', () => {
-    it('deve retornar uma lista de tracks ordenada pela avaliação', async () => {
-      const mockTrackIds = ['track-id-1', 'track-id-2'];
-      
-      const mockTrack1: Track = {
-        id: 'track-id-1',
-        name: 'Bohemian Rhapsody',
-        artist: 'Queen',
-        artist_uri: 'spotify:artist:1dfeR4HaWDbWqFHLkxsg1d',
-        album: 'A Night at the Opera',
-        album_uri: 'spotify:album:1dfeR4HaWDbWqFHLkxsg1d',
-        image: 'https://i.scdn.co/image/ab67616d0000b273e3b5e4b4b4b4b4b4b4b4b4b4',
-        uri: 'spotify:track:3z8b6s4z3f7c5e5b4b4b4b4b4b4b4b4b',
-        isrcId: 'GB-AHT-75-00001',
-      } as Track;
+    const mockUserId = 'user-123';
+    const mockTrackIds = ['track-1', 'track-2'];
+    const mockTrack1 = { id: 'track-1', name: 'Track One' } as Track;
+    const mockTrack2 = { id: 'track-2', name: 'Track Two' } as Track;
+    const mockPaginatedTrackDto: PaginatedResponse<TrackDto> = {
+      data: [new TrackDto(mockTrack1), new TrackDto(mockTrack2)],
+      total: 2, limit: 2, offset: 0, next: null, previous: null,
+    };
+    const mockFinalResponse: PaginatedResponse<TrackWithReviewDto> = {
+      data: [new TrackWithReviewDto(mockTrack1, null, []), new TrackWithReviewDto(mockTrack2, null, [])],
+      total: 2, limit: 2, offset: 0, next: null, previous: null,
+    };
+    
+    jest.spyOn(TrackerMapper, 'fromTracksToPaginatedTrackDto').mockReturnValue(mockPaginatedTrackDto);
 
-      const mockTrack2: Track = {
-        id: 'track-id-2',
-        name: 'Stairway to Heaven',
-        artist: 'Led Zeppelin',
-        artist_uri: 'spotify:artist:36QJpDe2go2KgaRleHCDls',
-        album: 'Led Zeppelin IV',
-        album_uri: 'spotify:album:2L3s6a99sA3h2SHdC2Y4i6',
-        image: 'https://i.scdn.co/image/ab67616d0000b2737a3c8e8b8b8b8b8b8b8b8b8b',
-        uri: 'spotify:track:51pQ7v9i2a3M3c3x4y5z67',
-        isrcId: 'US-AT2-71-00293',
-      } as Track;
-
+    it('deve retornar uma lista paginada de tracks enriquecidas', async () => {
       rankingRepository.findBestTracksByRatingIds.mockResolvedValue(mockTrackIds);
-      
-      trackRepository.findById
-        .mockResolvedValueOnce(mockTrack1)
-        .mockResolvedValueOnce(mockTrack2);
+      trackRepository.findById.mockResolvedValueOnce(mockTrack1).mockResolvedValueOnce(mockTrack2);
+      searchService.enrichTracksWithReviews.mockResolvedValue(mockFinalResponse);
 
-      const result = await service.getBestTracksByRating();
-      console.log(JSON.stringify(result, null, 2));
+      const result = await service.getBestTracksByRating(mockUserId);
 
-      expect(result).toEqual([mockTrack1, mockTrack2]);
-      expect(result.length).toBe(2);
+      expect(result).toEqual(mockFinalResponse);
       expect(rankingRepository.findBestTracksByRatingIds).toHaveBeenCalledTimes(1);
       expect(trackRepository.findById).toHaveBeenCalledTimes(2);
-      expect(trackRepository.findById).toHaveBeenCalledWith('track-id-1');
-      expect(trackRepository.findById).toHaveBeenCalledWith('track-id-2');
+      expect(TrackerMapper.fromTracksToPaginatedTrackDto).toHaveBeenCalledWith([mockTrack1, mockTrack2]);
+      expect(searchService.enrichTracksWithReviews).toHaveBeenCalledWith(mockPaginatedTrackDto, mockUserId);
     });
 
-    it('deve retornar um array vazio se não houver tracks ranqueadas', async () => {
+    it('deve retornar uma resposta paginada vazia se não houver tracks ranqueadas', async () => {
       rankingRepository.findBestTracksByRatingIds.mockResolvedValue([]);
       
-      const result = await service.getBestTracksByRating();
-      console.log(JSON.stringify(result, null, 2));
-
-      expect(result).toEqual([]);
+      const result = await service.getBestTracksByRating(mockUserId);
+      
+      expect(result.data).toEqual([]);
       expect(rankingRepository.findBestTracksByRatingIds).toHaveBeenCalledTimes(1);
       expect(trackRepository.findById).not.toHaveBeenCalled();
     });
 
-    it('deve lançar um erro se uma track ranqueada não for encontrada', async () => {
-      const mockTrackIds = ['track-id-1', 'missing-track-id'];
-      const mockTrack1: Track = {
-        id: 'track-id-1',
-        name: 'Bohemian Rhapsody',
-        artist: 'Queen',
-        artist_uri: 'spotify:artist:1dfeR4HaWDbWqFHLkxsg1d',
-        album: 'A Night at the Opera',
-        album_uri: 'spotify:album:1dfeR4HaWDbWqFHLkxsg1d',
-        image: 'https://i.scdn.co/image/ab67616d0000b273e3b5e4b4b4b4b4b4b4b4b4b4',
-        uri: 'spotify:track:3z8b6s4z3f7c5e5b4b4b4b4b4b4b4b4b4',
-        isrcId: 'GB-AHT-75-00001',
-      } as Track;
+    it('deve lançar um erro se uma track não for encontrada', async () => {
+      rankingRepository.findBestTracksByRatingIds.mockResolvedValue(['track-1', 'missing-id']);
+      trackRepository.findById.mockResolvedValueOnce(mockTrack1).mockResolvedValueOnce(null);
 
-      rankingRepository.findBestTracksByRatingIds.mockResolvedValue(mockTrackIds);
-      
-      trackRepository.findById
-        .mockResolvedValueOnce(mockTrack1)
-        .mockResolvedValueOnce(null);
-
-      await expect(service.getBestTracksByRating()).rejects.toThrow(
-        'Track with id missing-track-id not found',
+      await expect(service.getBestTracksByRating(mockUserId)).rejects.toThrow(
+        'Track with id missing-id not found'
       );
-
-      expect(rankingRepository.findBestTracksByRatingIds).toHaveBeenCalledTimes(1);
-      expect(trackRepository.findById).toHaveBeenCalledTimes(2);
     });
   });
 });

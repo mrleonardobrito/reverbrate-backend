@@ -8,6 +8,9 @@ import { ListRepository } from 'src/lists/interfaces/list-repository.interface';
 import { Track } from 'src/tracks/entities/track.entity';
 import { RankingRepository } from './interfaces/ranking-repository.interface';
 import { TrackRepository } from 'src/tracks/interfaces/track-repository.interface';
+import { SearchService } from 'src/search/search.service';
+import { TrackerMapper } from 'src/tracks/mappers/to-paginated-track.mapper';
+import { TrackWithReviewDto } from 'src/tracks/dtos/track-response.dto';
 
 @Injectable()
 export class RankingsService {
@@ -23,6 +26,8 @@ export class RankingsService {
         private rankingRepository: RankingRepository,
         @Inject('TrackRepository')
         private trackRepository: TrackRepository,
+        @Inject('SearchService')
+        private searchService: SearchService,
     ) { }
 
     async getMostFollowedUsers(query: PaginatedRequest): Promise<PaginatedResponse<MostFollowedUserResponseDto>> {
@@ -47,117 +52,20 @@ export class RankingsService {
         };
     }
 
-    async getTracksNetworkRanking(): Promise<PaginatedResponse<RankingTrackNetworkDto>> {
-        return {
-            data: [
-                {
-                    rate: 4,
-                    comment: 'ddsd',
-                    created_at: '2025-07-20T21:01:41.539Z',
-                    updated_at: '2025-07-20T21:01:41.539Z',
-                    track_info: {
-                        id: '4NczzeHBQPPDO0B9AAmB8d',
-                        cover: 'https://i.scdn.co/image/ab67616d0000b2734498fe043c281c7f3b96a57a',
-                        name: 'Assumptions',
-                        artist: 'Sam Gellaitry',
-                        review: null
-                    },
-                    created_by: {
-                        id: '7NNOa',
-                        name: 'Leonardo Brito',
-                        image: 'https://i.scdn.co/image/ab6775700000ee85aee7f3b1fe8ab3bd553ce671'
-                    },
-                    network: [
-                        {
-                            rate: 4,
-                            comment: 'musica pica',
-                            created_at: '2025-07-20T21:01:41.539Z',
-                            updated_at: '2025-07-20T21:01:41.539Z',
-                            track_info: {
-                                id: '4NczzeHBQPPDO0B9AAmB8d',
-                                cover: 'https://i.scdn.co/image/ab67616d0000b2734498fe043c281c7f3b96a57a',
-                                name: 'Assumptions',
-                                artist: 'Sam Gellaitry',
-                                review: null
-                            },
-                            created_by: {
-                                id: 'aINO23',
-                                name: 'Vinicius Alves',
-                                image: 'https://i.scdn.co/image/ab6775700000ee85aee7f3b1fe8ab3bd553ce671'
-                            },
-                            network: []
-                        },
-                        {
-                            rate: 4,
-                            comment: 'ddsd',
-                            created_at: '2025-07-20T21:01:41.539Z',
-                            updated_at: '2025-07-20T21:01:41.539Z',
-                            track_info: {
-                                id: '4NczzeHBQPPDO0B9AAmB8d',
-                                cover: 'https://i.scdn.co/image/ab67616d0000b2734498fe043c281c7f3b96a57a',
-                                name: 'Assumptions',
-                                artist: 'Sam Gellaitry',
-                                review: null
-                            },
-                            created_by: {
-                                id: '7NNOa',
-                                name: 'Carlos Eduardo',
-                                image: 'https://i.scdn.co/image/ab6775700000ee85aee7f3b1fe8ab3bd553ce671'
-                            },
-                            network: []
-                        },
-                        {
-                            rate: 4,
-                            comment: 'ddsd',
-                            created_at: '2025-07-20T21:01:41.539Z',
-                            updated_at: '2025-07-20T21:01:41.539Z',
-                            track_info: {
-                                id: '4NczzeHBQPPDO0B9AAmB8d',
-                                cover: 'https://i.scdn.co/image/ab67616d0000b2734498fe043c281c7f3b96a57a',
-                                name: 'Assumptions',
-                                artist: 'Sam Gellaitry',
-                                review: null
-                            },
-                            created_by: {
-                                id: '7NNOa',
-                                name: 'Levid Lima',
-                                image: 'https://i.scdn.co/image/ab6775700000ee85aee7f3b1fe8ab3bd553ce671'
-                            },
-                            network: []
-                        },
-                        {
-                            rate: 4,
-                            comment: 'ddsd',
-                            created_at: '2025-07-20T21:01:41.539Z',
-                            updated_at: '2025-07-20T21:01:41.539Z',
-                            track_info: {
-                                id: '4NczzeHBQPPDO0B9AAmB8d',
-                                cover: 'https://i.scdn.co/image/ab67616d0000b2734498fe043c281c7f3b96a57a',
-                                name: 'Assumptions',
-                                artist: 'Sam Gellaitry',
-                                review: null
-                            },
-                            created_by: {
-                                id: '7NNOa',
-                                name: 'Vitoria Moreira',
-                                image: 'https://i.scdn.co/image/ab6775700000ee85aee7f3b1fe8ab3bd553ce671'
-                            },
-                            network: []
-                        }
-                    ]
-                }
-            ],
-            limit: 20,
-            next: '<url_da_api>/lists?offset=1&limit=1',
-            offset: 0,
-            previous: '<url_da_api>/lists?offset=1&limit=1',
-            total: 15
-        };
-    }
-
-    async getBestTracksByRating(): Promise<Track[]> {
+    async getBestTracksByRating(userId: string): Promise<PaginatedResponse<TrackWithReviewDto>> {
         const tracksId = await this.rankingRepository.findBestTracksByRatingIds();
         const bestTracks: Track[] = [];
+
+        if (tracksId.length === 0) {
+            return {
+                data: [],
+                total: 0,
+                limit: 0, 
+                offset: 0,
+                next: null,
+                previous: null,
+            };
+        }
 
         for (const trackId of tracksId) {
             const track = await this.trackRepository.findById(trackId);
@@ -167,6 +75,9 @@ export class RankingsService {
             bestTracks.push(track);
         }
 
-        return bestTracks
+        const tracks = TrackerMapper.fromTracksToPaginatedTrackDto(bestTracks);
+
+
+        return this.searchService.enrichTracksWithReviews(tracks, userId);
     }
 }

@@ -52,7 +52,7 @@ export class SearchService {
     return { tracks: tracksWithReview, artists, albums };
   }
   
-  private async enrichTracksWithReviews(
+  async enrichTracksWithReviews(
     tracks: PaginatedResponse<TrackDto>,
     userId: string,
   ): Promise<PaginatedResponse<TrackWithReviewDto>> {
@@ -85,7 +85,7 @@ export class SearchService {
           artist_uri: trackDto.artist_uri,
           album: trackDto.album_name,
           album_uri: trackDto.album_uri,
-          isrcId: trackDto.isrc_id || '', // ADICIONADO/AJUSTADO
+          isrcId: trackDto.isrc_id || '', 
         });
         
         return new TrackWithReviewDto(trackEntity, userReview, networkReviews);
