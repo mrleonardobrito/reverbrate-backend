@@ -12,6 +12,7 @@ import { ListsController } from './lists/lists.controller';
 import { ListsModule } from './lists/lists.module';
 import { TracksModule } from './tracks/tracks.module';
 import { RankingsModule } from './rankings/rankings.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { RankingsModule } from './rankings/rankings.module';
     ListsModule,
     TracksModule,
     RankingsModule,
+    RedisModule,
   ],
   controllers: [ListsController],
 })
-export class AppModule {}
+export class AppModule { }

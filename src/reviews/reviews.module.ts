@@ -22,4 +22,4 @@ import { SpotifyTrackRepository } from 'src/tracks/repositories/spotify-track.re
   ],
   exports: [ReviewsService],
 })
-export class ReviewsModule {}
+export class ReviewsModule { }
