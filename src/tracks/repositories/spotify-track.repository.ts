@@ -38,22 +38,25 @@ export class SpotifyTrackRepository implements TrackRepository {
   }
 
   private async findSimilarTrack(track: SpotifyApi.SingleTrackResponse): Promise<Track> {
-    const cachedTracks = await this.redisService.getSimilarTracks(track.id);
-    if (cachedTracks && cachedTracks.length > 0) {
-      const randomIndex = Math.floor(Math.random() * cachedTracks.length);
-      const cachedTrack = cachedTracks[randomIndex];
-      // Converte o objeto do Redis em uma instância real da classe Track
-      return Track.create({
-        id: cachedTrack.id,
-        name: cachedTrack.name,
-        artist: cachedTrack.artist,
-        artist_uri: cachedTrack.artist_uri,
-        album: cachedTrack.album,
-        album_uri: cachedTrack.album_uri,
-        uri: cachedTrack.uri,
-        image: cachedTrack.image,
-        isrcId: cachedTrack.isrcId,
-      });
+    try {
+      const cachedTracks = await this.redisService.getSimilarTracks(track.id);
+      if (cachedTracks && cachedTracks.length > 0) {
+        const randomIndex = Math.floor(Math.random() * cachedTracks.length);
+        const cachedTrack = cachedTracks[randomIndex];
+        return Track.create({
+          id: cachedTrack.id,
+          name: cachedTrack.name,
+          artist: cachedTrack.artist,
+          artist_uri: cachedTrack.artist_uri,
+          album: cachedTrack.album,
+          album_uri: cachedTrack.album_uri,
+          uri: cachedTrack.uri,
+          image: cachedTrack.image,
+          isrcId: cachedTrack.isrcId,
+        });
+      }
+    } catch (error) {
+      console.warn('Redis indisponível, usando fallback do Spotify:', error);
     }
 
     const searchQuery = `artist:${track.artists[0].name}`;
@@ -69,14 +72,20 @@ export class SpotifyTrackRepository implements TrackRepository {
       .filter(t => t.id !== track.id && t.album.id !== track.album.id)
       .map(t => SpotifyTrackMapper.toDomain(t));
 
-    if (similarTracks.length > 0) {
-      await this.redisService.cacheSimilarTracks(track.id, similarTracks);
-
-      const randomIndex = Math.floor(Math.random() * similarTracks.length);
-      return similarTracks[randomIndex];
+    if (similarTracks.length === 0) {
+      throw new Error('No similar tracks found');
     }
 
-    throw new Error('No similar tracks found');
+    try {
+      await this.redisService.cacheSimilarTracks(track.id, similarTracks).catch(error => {
+        console.warn('Falha ao cachear tracks similares:', error);
+      });
+    } catch (error) {
+      console.warn('Falha ao cachear tracks similares:', error);
+    }
+
+    const randomIndex = Math.floor(Math.random() * similarTracks.length);
+    return similarTracks[randomIndex];
   }
 
   async findNextTrack(currentTrackId: string): Promise<Track> {

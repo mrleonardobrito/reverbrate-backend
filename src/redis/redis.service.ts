@@ -5,8 +5,9 @@ import { Track } from 'src/tracks/entities/track.entity';
 
 @Injectable()
 export class RedisService {
-    private readonly SIMILAR_TRACKS_EXPIRATION = 60 * 60 * 24; // 24 horas
-    private readonly QUEUE_EXPIRATION = 60 * 60 * 24; // 24 horas
+    private readonly SIMILAR_TRACKS_EXPIRATION = 60 * 60 * 24;
+    private readonly QUEUE_EXPIRATION = 60 * 60 * 24;
+    private readonly TIMEOUT = 1000;
 
     constructor(
         @Inject('REDIS_CLIENT')

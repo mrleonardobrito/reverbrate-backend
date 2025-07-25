@@ -12,7 +12,7 @@ import Redis from 'ioredis';
             useFactory: (configService: ConfigService) => {
                 const host = configService.get('redis.host');
                 const port = configService.get('redis.port');
-                return new Redis({ host, port });
+                return new Redis({ host, port, connectTimeout: 500, maxRetriesPerRequest: 1 });
             },
             inject: [ConfigService],
         },
