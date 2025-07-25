@@ -14,6 +14,10 @@ import { ArtistsModule } from 'src/artists/artists.module';
 import { AlbumsModule } from 'src/albums/albums.module';
 import { SpotifyArtistsRepository } from 'src/artists/repositories/artists.repository';
 import { SpotifyAlbumRepository } from 'src/albums/repositories/spotify-album.repository';
+import { SearchModule } from 'src/search/search.module'; 
+import { Prisma } from '@prisma/client';
+import { PrismaRankingRepository } from './repositories/ranking-tracks.repository';
+import { SearchService } from 'src/search/search.service';
 
 @Module({
   imports: [
@@ -24,15 +28,21 @@ import { SpotifyAlbumRepository } from 'src/albums/repositories/spotify-album.re
     TracksModule,
     ArtistsModule,
     AlbumsModule,
+    SearchModule, 
   ],
   controllers: [RankingsController],
-  providers: [RankingsService, {
-    provide: 'UserRepository',
-    useClass: PrismaUserRepository,
-  }, {
+  providers: [
+    RankingsService,
+    {
+      provide: 'UserRepository',
+      useClass: PrismaUserRepository,
+    }, {
       provide: 'ReviewRepository',
       useClass: PrismaReviewRepository,
     }, {
+    provide: 'RankingRepository',
+    useClass: PrismaRankingRepository,
+   }, {
       provide: 'ListRepository',
       useClass: PrismaListsRepository,
     }, {
@@ -44,6 +54,7 @@ import { SpotifyAlbumRepository } from 'src/albums/repositories/spotify-album.re
     }, {
       provide: 'AlbumRepository',
       useClass: SpotifyAlbumRepository,
-    }]
+    }
+  ]
 })
 export class RankingsModule { }

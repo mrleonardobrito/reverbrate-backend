@@ -49,6 +49,6 @@ export class ArtistDto {
     this.name = artist.name;
     this.cover = artist.cover;
     this.uri = artist.uri;
-    this.tracks = artist.tracks.map(track => new TrackWithReviewDto(track));
+    this.tracks = artist.tracks.map(track => new TrackWithReviewDto(track, null, null));
   }
 }

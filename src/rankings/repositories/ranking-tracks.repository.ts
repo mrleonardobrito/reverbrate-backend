@@ -1,7 +1,7 @@
 import { PrismaService } from "src/prisma/prisma.service";
 import { RankingRepository } from "../interfaces/ranking-repository.interface";
 
-export class RankingTracksRepository implements RankingRepository {
+export class PrismaRankingRepository implements RankingRepository {
   constructor(private readonly prisma: PrismaService) { }
 
   async findBestTracksByRatingIds(): Promise<string[]> {

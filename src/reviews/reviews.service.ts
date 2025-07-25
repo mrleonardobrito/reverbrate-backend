@@ -37,14 +37,12 @@ export class ReviewsService {
     if (!review) {
       throw new HttpException('Review not found', HttpStatus.NOT_FOUND);
     }
-    return {
-      ...new ReviewDto(review),
-      track_info: new TrackWithReviewDto(track),
-    };
+    return new ReviewWithTrackDto(review, track)
   }
 
   async getAllReviews(userId: string, query: PaginatedRequest): Promise<PaginatedResponse<ReviewWithTrackDto>> {
     const reviews = await this.reviewRepository.findAll(userId, query);
+
     if (!reviews.data) {
       return {
         data: [],
@@ -55,13 +53,18 @@ export class ReviewsService {
         total: reviews.total,
       };
     }
-    const tracks = await this.trackRepository.findManyByIds(reviews.data.map(review => review.trackId));
+
+    const tracks = await this.trackRepository.findManyByIds(
+      reviews.data.map(review => review.trackId),
+    );
+
     const reviewsWithTrackInfo = reviews.data
       .filter(review => tracks.some(track => track.id === review.trackId))
-      .map(review => ({
-        ...new ReviewDto(review),
-        track_info: new TrackWithReviewDto(tracks.find(track => track.id === review.trackId)!),
-      }));
+      .map(review => {
+        const track = tracks.find(track => track.id === review.trackId);
+        return new ReviewWithTrackDto(review, track!);
+      });
+
     return {
       data: reviewsWithTrackInfo,
       limit: reviews.limit,

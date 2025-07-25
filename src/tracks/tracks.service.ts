@@ -30,7 +30,7 @@ export class TracksService {
       isrcId: track.isrcId,
       review: review ?? undefined,
     });
-    return new TrackWithReviewDto(trackWithReview);
+    return new TrackWithReviewDto(trackWithReview, null, null);
   }
 
   async findManyByIds(userId: string, ids: string[]): Promise<TrackWithReviewDto[]> {
@@ -51,7 +51,7 @@ export class TracksService {
         isrcId: track.isrcId,
         review: review ?? undefined,
       });
-      return new TrackWithReviewDto(trackWithReview);
+      return new TrackWithReviewDto(trackWithReview, null, null);
     });
   }
 }

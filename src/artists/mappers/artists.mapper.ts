@@ -9,7 +9,7 @@ export class ArtistsMapper {
       name: artist.name,
       cover: artist.cover,
       uri: artist.uri,
-      tracks: artist.tracks.map(track => new TrackWithReviewDto(track)),
+      tracks: artist.tracks.map(track => new TrackWithReviewDto(track, null, null)),
     };
   }
 }

@@ -12,6 +12,7 @@ import { PrismaUserRepository } from 'src/users/repositories/prisma-user.reposit
 @Module({
   imports: [SpotifyModule, ReviewsModule, AuthModule, UsersModule],
   controllers: [SearchController],
+  exports: [SearchService],
   providers: [
     SearchService,
     {

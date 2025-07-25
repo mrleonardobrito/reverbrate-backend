@@ -162,10 +162,10 @@ export class TrackWithReviewDto extends TrackResumedDto {
   constructor(
     track: Track,
     userReview: Review | null,
-    networkReviews: Review[],
+    networkReviews: Review[] | null,
   ) {
     super(track);
     this.review = userReview ? new ReviewDto(userReview) : null;
-    this.network = networkReviews.map((r) => new ReviewDto(r));
+    this.network = networkReviews ? networkReviews.map((r) => new ReviewDto(r)) : [];
   }
 }

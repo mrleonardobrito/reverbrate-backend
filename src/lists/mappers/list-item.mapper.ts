@@ -12,7 +12,7 @@ export class ListItemMapper {
   static toResponseDto(type: ListType, listItem: ListItem): ListItemResponseDto {
     switch (type) {
       case ListType.TRACK:
-        return new TrackWithReviewDto(listItem as Track);
+        return new TrackWithReviewDto(listItem as Track, null, null);
       case ListType.ARTIST:
         return new ArtistDto(listItem as Artist);
       case ListType.ALBUM:

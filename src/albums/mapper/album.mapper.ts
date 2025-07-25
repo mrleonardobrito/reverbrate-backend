@@ -11,7 +11,7 @@ export class AlbumMapper {
       album_type: album.album_type,
       artist_name: album.artist_name,
       uri: album.uri,
-      tracks: album.tracks.map(track => new TrackWithReviewDto(track)),
+      tracks: album.tracks.map(track => new TrackWithReviewDto(track, null, null)),
     };
   }
 }

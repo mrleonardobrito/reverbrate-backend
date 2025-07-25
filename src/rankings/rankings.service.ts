@@ -26,7 +26,6 @@ export class RankingsService {
         private rankingRepository: RankingRepository,
         @Inject('TrackRepository')
         private trackRepository: TrackRepository,
-        @Inject('SearchService')
         private searchService: SearchService,
     ) { }
 
