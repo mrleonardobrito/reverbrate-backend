@@ -96,4 +96,9 @@ export default () => ({
             maxAge: parseDuration(process.env.JWT_REFRESH_EXPIRES_IN || '7d'),
         },
     },
+
+    redis: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379', 10),
+    },
 }); 

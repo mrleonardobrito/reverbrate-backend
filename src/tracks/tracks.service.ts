@@ -54,4 +54,20 @@ export class TracksService {
       return new TrackWithReviewDto(trackWithReview);
     });
   }
+
+  async getNextTrack(userId: string, currentTrackId: string): Promise<TrackWithReviewDto> {
+    const nextTrack = await this.trackRepository.findNextTrack(currentTrackId);
+    if (!nextTrack) {
+      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
+    }
+    return await this.findById(userId, nextTrack.id);
+  }
+
+  async getPreviousTrack(userId: string, currentTrackId: string): Promise<TrackWithReviewDto> {
+    const previousTrack = await this.trackRepository.findPreviousTrack(currentTrackId);
+    if (!previousTrack) {
+      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
+    }
+    return await this.findById(userId, previousTrack.id);
+  }
 }

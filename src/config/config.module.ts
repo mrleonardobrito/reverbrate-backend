@@ -26,6 +26,9 @@ import Joi from 'joi';
         CORS_ORIGIN: Joi.string().default('http://127.0.0.1:3000'),
         RATE_LIMIT_WINDOW_MS: Joi.string().default('15m'),
         RATE_LIMIT_MAX: Joi.number().default(100),
+
+        REDIS_HOST: Joi.string().default('localhost'),
+        REDIS_PORT: Joi.number().default(6379),
       }),
       validationOptions: {
         abortEarly: true,
@@ -33,4 +36,4 @@ import Joi from 'joi';
     }),
   ],
 })
-export class ConfigModule {}
+export class ConfigModule { }
