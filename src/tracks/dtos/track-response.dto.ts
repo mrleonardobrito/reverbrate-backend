@@ -136,12 +136,9 @@ export class TrackResumedDto {
     this.uri = track.uri;
     this.cover = track.cover;
     this.name = track.name;
-    this.artist = track.artist;
-    this.album_name = track.album;
     this.album_uri = track.album_uri;
     this.artist_uri = track.artist_uri;
     this.artist_name = track.artist_name;
-    this.isrc_id = track.isrc_id;
   }
 }
 
@@ -153,7 +150,7 @@ export class TrackWithReviewDto extends TrackResumedDto {
   review: ReviewDto | null;
 
   constructor(track: Track) {
-    super(track);
+    super(new TrackDto(track));
     this.review = track.review ? new ReviewDto(track.review) : null;
   }
 }

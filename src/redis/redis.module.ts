@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisService } from './redis.service';
 import Redis from 'ioredis';
 
+
 @Global()
 @Module({
     imports: [ConfigModule],
