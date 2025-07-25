@@ -16,6 +16,5 @@ export interface UserRepository {
   followUser(userId: string, followeeId: string): Promise<void>;
   isFollowing(userId: string, followeeId: string): Promise<boolean>;
   unfollowUser(userId: string, followeeId: string): Promise<void>;
-  findFollowers(userId: string): Promise<string[]>
   findMostFollowedUsers(query: PaginatedRequest): Promise<PaginatedResponse<User>>;
 }
