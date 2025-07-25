@@ -5,9 +5,6 @@ import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
 import { MostFollowedUserResponseDto, UserResponseDto } from 'src/users/dtos/user-response.dto';
 import { ReviewRepository } from 'src/reviews/interfaces/review-repository.interface';
 import { ListRepository } from 'src/lists/interfaces/list-repository.interface';
-import { Track } from 'src/tracks/entities/track.entity';
-import { RankingRepository } from './interfaces/ranking-repository.interface';
-import { TrackRepository } from 'src/tracks/interfaces/track-repository.interface';
 
 @Injectable()
 export class RankingsService {
@@ -19,10 +16,6 @@ export class RankingsService {
         private reviewRepository: ReviewRepository,
         @Inject('ListRepository')
         private listRepository: ListRepository,
-        @Inject('RankingRepository')
-        private rankingRepository: RankingRepository,
-        @Inject('TrackRepository')
-        private trackRepository: TrackRepository,
     ) { }
 
     async getMostFollowedUsers(query: PaginatedRequest): Promise<PaginatedResponse<MostFollowedUserResponseDto>> {
@@ -45,20 +38,5 @@ export class RankingsService {
             next: response.next,
             previous: response.previous,
         };
-    }
-
-    async getBestTracksByRating(): Promise<Track[]> {
-        const tracksId = await this.rankingRepository.findBestTracksByRatingIds();
-        const bestTracks: Track[] = [];
-
-        for (const trackId of tracksId) {
-            const track = await this.trackRepository.findById(trackId);
-            if (!track) {
-                throw new Error(`Track with id ${trackId} not found`);
-            }
-            bestTracks.push(track);
-        }
-
-        return bestTracks
     }
 }
