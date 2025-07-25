@@ -73,9 +73,18 @@ export default () => ({
 
     security: {
         cors: {
-            origin: process.env.CORS_ORIGIN?.split(',') || ['http://127.0.0.1:3000'],
+            origin: process.env.CORS_ORIGIN?.split(',') || ['http://127.0.0.1:3000', 'https://reverbrate-frontend.vercel.app'],
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
-            allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Requested-With'],
+            allowedHeaders: [
+                'Content-Type',
+                'Accept',
+                'Authorization',
+                'X-Requested-With',
+                'Origin',
+                'Access-Control-Allow-Origin',
+                'Access-Control-Allow-Headers',
+                'Access-Control-Allow-Methods'
+            ],
             exposedHeaders: ['Set-Cookie'],
             credentials: true,
         },

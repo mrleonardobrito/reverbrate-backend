@@ -23,7 +23,7 @@ import Joi from 'joi';
         PORT: Joi.number().default(3000),
         NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
 
-        CORS_ORIGIN: Joi.string().default('http://127.0.0.1:3000'),
+        CORS_ORIGIN: Joi.string().default('http://127.0.0.1:3000,https://reverbrate-frontend.vercel.app'),
         RATE_LIMIT_WINDOW_MS: Joi.string().default('15m'),
         RATE_LIMIT_MAX: Joi.number().default(100),
 
