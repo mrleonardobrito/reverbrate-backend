@@ -170,7 +170,7 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
-  async findFollowers(userId: string): Promise<User []>{
+  async findFollowers(userId: string): Promise<string []>{
     const followersId = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -184,29 +184,9 @@ export class PrismaUserRepository implements UserRepository {
     if (!followersId) {
       return [];
     }
-    const followers = await this.prisma.user.findMany({
-      where: {
-        id: {
-          in: followersId.followers.map(follower => follower.followerId),
-        },
-      },
-    });
-
-    return followers.map(follower => {
-      return User.create({
-        id: follower.id,
-        name: follower.name,
-        email: follower.email,
-        nickname: follower.nickname,
-        isPrivate: follower.isPrivate,
-        image: follower.avatarUrl ?? '',
-        createdAt: follower.createdAt,
-        updatedAt: follower.updatedAt,
-        deletedAt: follower.deletedAt ?? undefined,
-      });
-    });
+    return followersId.followers.map(follower => follower.followerId);
   }
-
+  
   async findMostFollowedUsers(query: PaginatedRequest): Promise<PaginatedResponse<User>> {
     const { limit, offset } = query;
     const users = await this.prisma.user.findMany({

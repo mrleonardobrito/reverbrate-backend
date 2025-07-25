@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ReviewDto } from 'src/reviews/dtos/review.dto';
 import { Track } from '../entities/track.entity';
-import { Review } from 'src/reviews/entities/review.entity';
 
 export class TrackDto {
   @ApiProperty({
@@ -58,12 +57,6 @@ export class TrackDto {
   })
   cover: string;
 
-  @ApiProperty({
-    description: 'The ISRC ID of the track',
-    example: 'US-AB-01-0000000000',
-  })
-  isrc_id: string;
-
   constructor(track: Track) {
     this.id = track.id;
     this.uri = track.uri;
@@ -103,6 +96,12 @@ export class TrackResumedDto {
   name: string;
 
   @ApiProperty({
+    description: 'The name of the artist who performed the track',
+    example: 'Queen',
+  })
+  artist: string;
+
+  @ApiProperty({
     description: 'The ISRC ID of the track',
     example: 'US-AB-01-0000000000',
   })
@@ -137,7 +136,8 @@ export class TrackResumedDto {
     this.uri = track.uri;
     this.cover = track.cover;
     this.name = track.name;
-    this.album_name = track.album_name;
+    this.artist = track.artist;
+    this.album_name = track.album;
     this.album_uri = track.album_uri;
     this.artist_uri = track.artist_uri;
     this.artist_name = track.artist_name;
@@ -147,25 +147,13 @@ export class TrackResumedDto {
 
 export class TrackWithReviewDto extends TrackResumedDto {
   @ApiProperty({
-    description: 'The review for the track from the current user',
+    description: 'The review for the track',
     type: ReviewDto,
-    nullable: true,
   })
   review: ReviewDto | null;
 
-  @ApiProperty({
-    description: 'Reviews for the track from users the current user follows',
-    type: [ReviewDto],
-  })
-  network: ReviewDto[];
-
-  constructor(
-    track: TrackDto,
-    userReview: Review | null,
-    networkReviews: Review[],
-  ) {
+  constructor(track: Track) {
     super(track);
-    this.review = userReview ? new ReviewDto(userReview) : null;
-    this.network = networkReviews.map((r) => new ReviewDto(r));
+    this.review = track.review ? new ReviewDto(track.review) : null;
   }
 }

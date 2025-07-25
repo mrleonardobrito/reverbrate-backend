@@ -5,7 +5,7 @@ import { TrackDto } from 'src/tracks/dtos/track-response.dto';
 import { AlbumDto } from 'src/albums/dtos/search-album.dto';
 
 export interface SearchRepository {
-  searchTracks(query: SearchRequest): Promise<PaginatedResponse<TrackDto>>;
-  searchArtists(query: SearchRequest): Promise<PaginatedResponse<ArtistDto>>;
+  searchTrack(query: SearchRequest): Promise<PaginatedResponse<TrackDto>>;
+  searchArtist(query: SearchRequest): Promise<PaginatedResponse<ArtistDto>>;
   searchAlbum(query: SearchRequest): Promise<PaginatedResponse<AlbumDto>>;
 }
