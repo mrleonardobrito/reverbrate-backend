@@ -13,9 +13,20 @@ export class PrismaReviewRepository implements ReviewRepository {
   constructor(private readonly prisma: PrismaService) { }
 
   async findManyByUserAndTracks(userId: string, trackIds: string[]): Promise<Review[]> {
+    const userNetwork = await this.prisma.follow.findMany({
+      where: {
+        followerId: userId,
+      },
+    });
+
+    const userIds = userNetwork.map(follow => follow.followeeId);
+    userIds.push(userId);
+
     const reviews = await this.prisma.review.findMany({
       where: {
-        userId,
+        userId: {
+          in: userIds,
+        },
         trackId: {
           in: trackIds,
         },
