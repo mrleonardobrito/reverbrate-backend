@@ -4,10 +4,12 @@ import { ReviewRepository } from 'src/reviews/interfaces/review-repository.inter
 import { SearchRequest } from './dtos/search-request.dto';
 import { SearchResponse } from './dtos/search-response.dto';
 import { SearchRepository } from './repositories/spotify-search.repository';
-import { TrackWithReviewDto, TrackDto } from 'src/tracks/dtos/track-response.dto';
+import {
+  TrackWithReviewDto,
+  TrackDto,
+} from 'src/tracks/dtos/track-response.dto';
 import { UserRepository } from 'src/users/interfaces/user-repository.interface';
 import { Review } from 'src/reviews/entities/review.entity';
-import { Track } from 'src/tracks/entities/track.entity';
 
 @Injectable()
 export class SearchService {
@@ -24,8 +26,8 @@ export class SearchService {
     const emptyResponse = { data: [], total: 0, limit: 0, next: null, offset: 0, previous: null };
 
     const fetchAndEnrichTracks = async () => {
-      const tracks = await this.searchRepository.searchTrack(query);
-      return this.enrichTracksWithReviews(tracks, userId);
+        const tracks = await this.searchRepository.searchTrack(query);
+        return this.enrichTracksWithReviews(tracks, userId);
     };
 
     if (query.type === 'artist') {
@@ -51,73 +53,64 @@ export class SearchService {
 
     return { tracks: tracksWithReview, artists, albums };
   }
-  
+
   private async enrichTracksWithReviews(
     tracks: PaginatedResponse<TrackDto>,
     userId: string,
   ): Promise<PaginatedResponse<TrackWithReviewDto>> {
     if (tracks.data.length === 0) {
-      return tracks as any;
+        return tracks as any;
     }
 
     const trackIds = tracks.data.map((t) => t.id);
+    const userReviewsMap = await this.getUserReviewsMap(userId, trackIds);
+    return this.attachNetworkReviews(tracks, userReviewsMap, userId);
+  }
 
-    const [userReviews, networkReviewsRaw] = await Promise.all([
-      this.reviewRepository.findManyByUserAndTracks(userId, trackIds),
-      this.fetchNetworkReviews(userId, trackIds),
-    ]);
+  private async getUserReviewsMap(
+    userId: string,
+    trackIds: string[],
+  ): Promise<Map<string, Review>> {
+    if (trackIds.length === 0) return new Map();
+    const userReviews = await this.reviewRepository.findManyByUserAndTracks(
+      userId,
+      trackIds,
+    );
+    return new Map(userReviews.map((r) => [r.trackId, r]));
+  }
 
-    const userReviewsMap = new Map(userReviews.map((r) => [r.trackId, r]));
-    const networkReviewsByTrackId = this.groupReviewsByTrackId(networkReviewsRaw);
+  private async attachNetworkReviews(
+    tracks: PaginatedResponse<TrackDto>,
+    userReviewsMap: Map<string, Review>,
+    userId: string,
+  ): Promise<PaginatedResponse<TrackWithReviewDto>> {
+    const trackIds = tracks.data.map((track) => track.id);
+    const followings = await this.userRepository.findFollowers(userId);
+    
+    let networkReviewsRaw: Review[] = [];
+    for (const follower of followings) {
+        const reviews = await this.reviewRepository.findManyByUserAndTracks(
+            follower.id, 
+            trackIds,
+        );
+        networkReviewsRaw = networkReviewsRaw.concat(reviews);
+    }
+    
+    const networkReviewsByTrackId = new Map<string, Review[]>();
+    for (const review of networkReviewsRaw) {
+        if (!networkReviewsByTrackId.has(review.trackId)) {
+            networkReviewsByTrackId.set(review.trackId, []);
+        }
+        networkReviewsByTrackId.get(review.trackId)!.push(review);
+    }
 
     return {
       ...tracks,
-      data: tracks.data.map((trackDto) => {
-        const userReview = userReviewsMap.get(trackDto.id) || null;
-        const networkReviews = networkReviewsByTrackId.get(trackDto.id) || [];
-        
-        const trackEntity = Track.create({
-          id: trackDto.id,
-          uri: trackDto.uri,
-          name: trackDto.name,
-          image: trackDto.cover,
-          artist: trackDto.artist_name,
-          artist_uri: trackDto.artist_uri,
-          album: trackDto.album_name,
-          album_uri: trackDto.album_uri,
-          isrcId: trackDto.isrc_id || '', // ADICIONADO/AJUSTADO
-        });
-        
-        return new TrackWithReviewDto(trackEntity, userReview, networkReviews);
+      data: tracks.data.map((track) => {
+        const userReview = userReviewsMap.get(track.id) || null;
+        const networkReviews = networkReviewsByTrackId.get(track.id) || [];
+        return new TrackWithReviewDto(track, userReview, networkReviews);
       }),
     };
-  }
-
-  private async fetchNetworkReviews(userId: string, trackIds: string[]): Promise<Review[]> {
-    const followings = await this.userRepository.findFollowers(userId);
-    if (followings.length === 0) {
-      return [];
-    }
-    
-    const reviewPromises = followings.map(follower =>
-      this.reviewRepository.findManyByUserAndTracks(
-        follower.id, 
-        trackIds,
-      ),
-    );
-    
-    const reviewsByFollower = await Promise.all(reviewPromises);
-    return reviewsByFollower.flat();
-  }
-
-  private groupReviewsByTrackId(reviews: Review[]): Map<string, Review[]> {
-    const map = new Map<string, Review[]>();
-    for (const review of reviews) {
-      if (!map.has(review.trackId)) {
-        map.set(review.trackId, []);
-      }
-      map.get(review.trackId)!.push(review);
-    }
-    return map;
   }
 }

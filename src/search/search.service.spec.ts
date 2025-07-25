@@ -6,18 +6,17 @@ import { TrackDto } from 'src/tracks/dtos/track-response.dto';
 import { Review } from 'src/reviews/entities/review.entity';
 import { User } from 'src/users/entities/user.entity';
 
-const mockTrack: TrackDto = {
+const mockTrack = new TrackDto({
   id: 'track-1',
   uri: 'spotify:track:track-1',
   name: 'Awesome Song',
-  artist_name: 'The Mocks',
+  artist: 'The Mocks',
   artist_uri: 'spotify:artist:the-mocks',
-  album_name: 'Mock Album',
+  album: 'Mock Album',
   album_uri: 'spotify:album:mock-album',
-  cover: 'cover.jpg',
-  type: 'track',
-  isrc_id: 'USMC10100001', // ADICIONADO
-};
+  image: 'cover.jpg',
+  isrc_id: 'US-MCK-01-12345',
+} as any);
 
 const mockPaginatedTracks: PaginatedResponse<TrackDto> = {
   data: [mockTrack],
@@ -131,10 +130,12 @@ describe('SearchService', () => {
     userRepository.findFollowers.mockResolvedValue([mockFollower1, mockFollower2]);
     searchRepository.searchTrack.mockResolvedValue(mockPaginatedTracks);
     
-    reviewRepository.findManyByUserAndTracks
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([mockReviewFromFollower1])
-      .mockResolvedValueOnce([mockReviewFromFollower2]);
+    reviewRepository.findManyByUserAndTracks.mockImplementation(async (callerId: string) => {
+      if (callerId === userId) return [];
+      if (callerId === mockFollower1.id) return [mockReviewFromFollower1];
+      if (callerId === mockFollower2.id) return [mockReviewFromFollower2];
+      return [];
+    });
 
     const result = await service.search(req, userId);
     console.log(JSON.stringify(result, null, 2));
@@ -142,9 +143,8 @@ describe('SearchService', () => {
     const networkReviews = result.tracks.data[0].network;
     expect(networkReviews.length).toBe(2);
     
-    const followerIds = networkReviews.map(r => r.created_by.id);
-    expect(followerIds).toContain(mockFollower1.id);
-    expect(followerIds).toContain(mockFollower2.id);
+    expect(networkReviews[0].created_by.id).toBe(mockFollower1.id);
+    expect(networkReviews[1].created_by.id).toBe(mockFollower2.id);
 
     expect(reviewRepository.findManyByUserAndTracks).toHaveBeenCalledTimes(3);
   });
