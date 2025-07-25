@@ -70,12 +70,16 @@ export class AuthController {
 
     const tokens = await this.authService.exchangeCodeForTokens(code);
 
-    const accessTokenCookie = this.configService.get<CookieOptions>('accessTokenCookie');
-    const refreshTokenCookie = this.configService.get<CookieOptions>('refreshTokenCookie');
+    const cookieConfig = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none' as const,
+      path: '/',
+    };
 
     this.logger.debug('Configurações dos cookies:', {
-      accessTokenCookie,
-      refreshTokenCookie
+      cookieConfig,
+      nodeEnv: process.env.NODE_ENV
     });
 
     this.logger.debug('Definindo cookies com tokens', {
@@ -84,16 +88,15 @@ export class AuthController {
       expiresIn: tokens.expires_in
     });
 
-    res.cookie(
-      'access_token',
-      tokens.access_token,
-      accessTokenCookie as CookieOptions,
-    );
-    res.cookie(
-      'refresh_token',
-      tokens.refresh_token,
-      refreshTokenCookie as CookieOptions,
-    );
+    res.cookie('access_token', tokens.access_token, {
+      ...cookieConfig,
+      maxAge: tokens.expires_in * 1000, // converter segundos para milissegundos
+    });
+
+    res.cookie('refresh_token', tokens.refresh_token, {
+      ...cookieConfig,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias em milissegundos
+    });
 
     const needsSignUp = await this.authService.needSignUp();
     const redirectUrl = needsSignUp
@@ -126,19 +129,40 @@ export class AuthController {
   @Get('refresh')
   async refreshToken(@Query('refresh_token') refreshToken: string, @Res() res: Response) {
     if (!refreshToken) throw new BadRequestException('Missing refresh token');
+
     const tokens = await this.authService.refreshAccessToken(refreshToken);
-    res.cookie(
-      'access_token',
-      tokens.accessToken,
-      this.configService.get<CookieOptions>('accessTokenCookie') as CookieOptions,
-    );
-    res.cookie(
-      'refresh_token',
-      tokens.refreshToken,
-      this.configService.get<CookieOptions>('refreshTokenCookie') as CookieOptions,
-    );
+
+    const cookieConfig = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none' as const,
+      path: '/',
+    };
+
+    this.logger.debug('Renovando cookies com novos tokens', {
+      accessTokenLength: tokens.accessToken.length,
+      refreshTokenLength: tokens.refreshToken.length,
+      expiresIn: tokens.expiresIn
+    });
+
+    res.cookie('access_token', tokens.accessToken, {
+      ...cookieConfig,
+      maxAge: tokens.expiresIn * 1000,
+    });
+
+    res.cookie('refresh_token', tokens.refreshToken, {
+      ...cookieConfig,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+    });
+
     const frontendUrl = this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://127.0.0.1:3000/';
-    res.redirect(frontendUrl);
+
+    this.logger.debug('Redirecionando após renovação de tokens', {
+      frontendUrl,
+      cookiesSent: res.getHeader('Set-Cookie')
+    });
+
+    return res.redirect(frontendUrl);
   }
 
   @Get('token')
