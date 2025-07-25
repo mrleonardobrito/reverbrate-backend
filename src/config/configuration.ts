@@ -46,7 +46,7 @@ export default () => ({
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none' as const,
-            domain: process.env.COOKIE_DOMAIN || 'onrender.com',
+            domain: process.env.COOKIE_DOMAIN || '.onrender.com',
             path: '/',
         },
         refreshToken: {
@@ -55,7 +55,7 @@ export default () => ({
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none' as const,
-            domain: process.env.COOKIE_DOMAIN || 'onrender.com',
+            domain: process.env.COOKIE_DOMAIN || '.onrender.com',
             path: '/',
         },
     },
@@ -96,13 +96,13 @@ export default () => ({
             max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
         },
         accessTokenCookie: {
-            domain: process.env.COOKIE_DOMAIN,
+            domain: process.env.COOKIE_DOMAIN || '.onrender.com',
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none' as const,
             maxAge: parseDuration(process.env.JWT_EXPIRES_IN || '1h'),
         },
         refreshTokenCookie: {
-            domain: process.env.COOKIE_DOMAIN,
+            domain: process.env.COOKIE_DOMAIN || '.onrender.com',
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none' as const,
             maxAge: parseDuration(process.env.JWT_REFRESH_EXPIRES_IN || '7d'),

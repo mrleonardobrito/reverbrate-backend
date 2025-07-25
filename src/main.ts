@@ -12,6 +12,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   const corsConfig = configService.get('security.cors');
+  console.log(corsConfig);
   app.enableCors(corsConfig);
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
