@@ -53,7 +53,7 @@ export class ListsService {
     if (!updatedList) {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
-    return new ListResponseDto(updatedList, []);
+    return new ListResponseDto(updatedList, updatedList.items.map(item => ListItemMapper.toResponseDto(list.type, item)));
   }
 
   async updateList(listId: string, updateListDto: UpdateListRequestDto, userId: string): Promise<ListResponseDto> {
