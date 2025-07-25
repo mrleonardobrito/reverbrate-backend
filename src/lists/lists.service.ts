@@ -1,9 +1,10 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ListRepository } from './interfaces/list-repository.interface';
 import { CreateListRequestDto, UpdateListRequestDto } from './dto/list-request.dto';
-import { ListResponseDto } from './dto/list-response.dto';
+import { ListItemResponseDto, ListResponseDto } from './dto/list-response.dto';
 import { PaginatedRequest } from 'src/common/http/dtos/paginated-request.dto';
 import { PaginatedResponse } from 'src/common/http/dtos/paginated-response.dto';
+import { ListItemMapper } from './mappers/list-item.mapper';
 
 @Injectable()
 export class ListsService {
@@ -22,7 +23,7 @@ export class ListsService {
     if (!list) {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
-    return new ListResponseDto(list, []);
+    return new ListResponseDto(list, list.items.map(item => ListItemMapper.toResponseDto(list.type, item)));
   }
 
   async addItemToList(listId: string, itemId: string, userId: string): Promise<ListResponseDto> {
@@ -39,7 +40,7 @@ export class ListsService {
     if (!updatedList) {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
-    return new ListResponseDto(updatedList, []);
+    return new ListResponseDto(updatedList, updatedList.items.map(item => ListItemMapper.toResponseDto(list.type, item)));
   }
 
   async removeItemFromList(listId: string, itemId: string, userId: string): Promise<ListResponseDto> {
@@ -64,7 +65,7 @@ export class ListsService {
     if (!updatedList) {
       throw new HttpException('List not found', HttpStatus.NOT_FOUND);
     }
-    return new ListResponseDto(updatedList, []);
+    return new ListResponseDto(updatedList, updatedList.items.map(item => ListItemMapper.toResponseDto(list.type, item)));
   }
 
   async getLists(paginatedRequest: PaginatedRequest, userId: string): Promise<PaginatedResponse<ListResponseDto>> {
