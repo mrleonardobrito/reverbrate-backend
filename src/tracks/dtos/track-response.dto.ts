@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ReviewDto } from 'src/reviews/dtos/review.dto';
 import { Track } from '../entities/track.entity';
+import { Review } from 'src/reviews/entities/review.entity';
 
 export class TrackDto {
   @ApiProperty({
@@ -56,6 +57,12 @@ export class TrackDto {
     example: 'https://example.com/covers/bohemian-rhapsody.jpg',
   })
   cover: string;
+  
+  @ApiProperty({
+    description: 'The ISRC ID of the track',
+    example: 'US-AB-01-0000000000',
+  })
+  isrc_id: string;
 
   constructor(track: Track) {
     this.id = track.id;
@@ -96,12 +103,6 @@ export class TrackResumedDto {
   name: string;
 
   @ApiProperty({
-    description: 'The name of the artist who performed the track',
-    example: 'Queen',
-  })
-  artist: string;
-
-  @ApiProperty({
     description: 'The ISRC ID of the track',
     example: 'US-AB-01-0000000000',
   })
@@ -136,7 +137,6 @@ export class TrackResumedDto {
     this.uri = track.uri;
     this.cover = track.image;
     this.name = track.name;
-    this.artist = track.artist;
     this.album_name = track.album;
     this.album_uri = track.album_uri;
     this.artist_uri = track.artist_uri;
@@ -147,13 +147,25 @@ export class TrackResumedDto {
 
 export class TrackWithReviewDto extends TrackResumedDto {
   @ApiProperty({
-    description: 'The review for the track',
+    description: 'The review for the track from the current user',
     type: ReviewDto,
+    nullable: true,
   })
   review: ReviewDto | null;
 
-  constructor(track: Track) {
+  @ApiProperty({
+    description: 'Reviews for the track from users the current user follows',
+    type: [ReviewDto],
+  })
+  network: ReviewDto[];
+
+  constructor(
+    track: Track,
+    userReview: Review | null,
+    networkReviews: Review[],
+  ) {
     super(track);
-    this.review = track.review ? new ReviewDto(track.review) : null;
+    this.review = userReview ? new ReviewDto(userReview) : null;
+    this.network = networkReviews.map((r) => new ReviewDto(r));
   }
 }
