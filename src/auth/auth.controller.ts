@@ -9,12 +9,14 @@ import {
   Body,
   HttpException,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CookieOptions, Response, Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { SignupRequestDto } from './dtos/signup-request.dto';
+import { AuthGuard } from './guards/auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -117,6 +119,7 @@ export class AuthController {
   }
 
   @Get('token')
+  @UseGuards(AuthGuard)
   async getToken(@Req() req: Request) {
     const { accessToken } = this.authService.extractToken(req);
     const needsSignUp = await this.authService.needSignUp();
