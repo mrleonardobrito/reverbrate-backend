@@ -17,10 +17,13 @@ import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { SignupRequestDto } from './dtos/signup-request.dto';
 import { AuthGuard } from './guards/auth.guard';
+import { Logger } from '@nestjs/common';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
@@ -67,21 +70,41 @@ export class AuthController {
 
     const tokens = await this.authService.exchangeCodeForTokens(code);
 
+    const accessTokenCookie = this.configService.get<CookieOptions>('accessTokenCookie');
+    const refreshTokenCookie = this.configService.get<CookieOptions>('refreshTokenCookie');
+
+    this.logger.debug('Configurações dos cookies:', {
+      accessTokenCookie,
+      refreshTokenCookie
+    });
+
+    this.logger.debug('Definindo cookies com tokens', {
+      accessTokenLength: tokens.access_token.length,
+      refreshTokenLength: tokens.refresh_token.length,
+      expiresIn: tokens.expires_in
+    });
+
     res.cookie(
       'access_token',
       tokens.access_token,
-      this.configService.get<CookieOptions>('accessTokenCookie') as CookieOptions,
+      accessTokenCookie as CookieOptions,
     );
     res.cookie(
       'refresh_token',
       tokens.refresh_token,
-      this.configService.get<CookieOptions>('refreshTokenCookie') as CookieOptions,
+      refreshTokenCookie as CookieOptions,
     );
 
     const needsSignUp = await this.authService.needSignUp();
     const redirectUrl = needsSignUp
       ? (this.configService.get<string>('FRONTEND_SIGNUP_URI') || 'http://127.0.0.1:3000/signup')
       : (this.configService.get<string>('FRONTEND_REDIRECT_URI') || 'http://127.0.0.1:3000/');
+
+    this.logger.debug('Redirecionando com cookies definidos', {
+      redirectUrl,
+      needsSignUp,
+      cookiesSent: res.getHeader('Set-Cookie')
+    });
 
     return res.redirect(redirectUrl);
   }
