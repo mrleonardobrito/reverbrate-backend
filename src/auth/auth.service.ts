@@ -36,7 +36,15 @@ export class AuthService {
   }
 
   async exchangeCodeForTokens(code: string) {
+    this.logger.debug('Iniciando troca de código por tokens', { code: code.substring(0, 5) + '...' });
+
     const data = await this.spotifyApi.authorizationCodeGrant(code);
+
+    this.logger.debug('Tokens recebidos do Spotify', {
+      hasAccessToken: !!data.body.access_token,
+      hasRefreshToken: !!data.body.refresh_token,
+      expiresIn: data.body.expires_in
+    });
 
     this.spotifyApi.setAccessToken(data.body.access_token);
     this.spotifyApi.setRefreshToken(data.body.refresh_token);
@@ -49,15 +57,36 @@ export class AuthService {
   }
 
   extractToken(req: Request) {
+    this.logger.debug('Headers recebidos:', {
+      headers: req.headers,
+      origin: req.headers.origin,
+      host: req.headers.host
+    });
+
+    this.logger.debug('Cookies recebidos:', {
+      cookies: req.cookies,
+      signedCookies: req.signedCookies,
+      cookieHeader: req.headers.cookie
+    });
+
     const accessToken = req.cookies?.['access_token'] as string | undefined;
     const refreshToken = req.cookies?.['refresh_token'] as string | undefined;
     const expiresIn = req.cookies?.['expires_in'] as number | undefined;
 
+    this.logger.debug('Tokens extraídos:', {
+      hasAccessToken: !!accessToken,
+      hasRefreshToken: !!refreshToken,
+      accessTokenLength: accessToken?.length,
+      refreshTokenLength: refreshToken?.length
+    });
+
     if (!accessToken) {
+      this.logger.warn('Access Token não encontrado na requisição');
       throw new HttpException('Access Token not found', HttpStatus.UNAUTHORIZED);
     }
 
     if (!refreshToken) {
+      this.logger.warn('Refresh Token não encontrado na requisição');
       throw new HttpException('Refresh Token not found', HttpStatus.UNAUTHORIZED);
     }
 
@@ -67,12 +96,24 @@ export class AuthService {
   async refreshAccessToken(
     refreshToken: string,
   ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+    this.logger.debug('Iniciando renovação de token', {
+      refreshTokenLength: refreshToken?.length
+    });
+
     this.spotifyApi.setRefreshToken(refreshToken);
     const data = await this.spotifyApi.refreshAccessToken();
 
+    this.logger.debug('Resposta da renovação de token', {
+      hasAccessToken: !!data.body.access_token,
+      hasRefreshToken: !!data.body.refresh_token,
+      expiresIn: data.body.expires_in
+    });
+
     if (!data.body.refresh_token) {
+      this.logger.error('Refresh Token expirado ou inválido');
       throw new HttpException('Refresh Token Expired', HttpStatus.UNAUTHORIZED);
     }
+
     this.spotifyApi.setAccessToken(data.body.access_token);
     return {
       accessToken: data.body['access_token'],
