@@ -46,6 +46,8 @@ export default () => ({
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none' as const,
+            domain: process.env.COOKIE_DOMAIN || 'onrender.com',
+            path: '/',
         },
         refreshToken: {
             name: 'refresh_token',
@@ -53,6 +55,8 @@ export default () => ({
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none' as const,
+            domain: process.env.COOKIE_DOMAIN || 'onrender.com',
+            path: '/',
         },
     },
 
@@ -81,9 +85,8 @@ export default () => ({
                 'Authorization',
                 'X-Requested-With',
                 'Origin',
-                'Access-Control-Allow-Origin',
-                'Access-Control-Allow-Headers',
-                'Access-Control-Allow-Methods'
+                'Cookie',
+                'Set-Cookie'
             ],
             exposedHeaders: ['Set-Cookie'],
             credentials: true,

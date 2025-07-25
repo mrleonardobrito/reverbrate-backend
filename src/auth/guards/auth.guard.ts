@@ -24,6 +24,9 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
+    console.log('Headers:', request.headers);
+    console.log('Cookies:', request.cookies);
+
     const { access_token: accessToken, refresh_token: refreshToken } = request.cookies as Cookies;
 
     if (!accessToken) {
@@ -34,32 +37,36 @@ export class AuthGuard implements CanActivate {
       await this.validateAndSetUserInfo(accessToken, request);
       return true;
     } catch (error) {
-      console.log(error);
+      console.log('Erro na validação do token:', error);
+      if (!refreshToken) {
+        throw new HttpException('Refresh token not found', HttpStatus.UNAUTHORIZED);
+      }
       return await this.handleTokenError(refreshToken, request);
     }
   }
 
   private async validateAndSetUserInfo(accessToken: string, request: AuthenticatedRequest): Promise<void> {
-    this.spotifyService.spotify.setAccessToken(accessToken);
-    const userInfo = await this.spotifyService.spotify.getMe();
-    const user = await this.profileRepository.findByEmail(userInfo.body.email);
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    try {
+      this.spotifyService.spotify.setAccessToken(accessToken);
+      const userInfo = await this.spotifyService.spotify.getMe();
+      const user = await this.profileRepository.findByEmail(userInfo.body.email);
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      request.user = user;
+    } catch (error) {
+      console.log('Erro ao validar usuário:', error);
+      throw error;
     }
-    request.user = user;
   }
 
   private async handleTokenError(refreshToken: string, request: AuthenticatedRequest): Promise<boolean> {
-    if (!refreshToken) {
-      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
-    }
-
     try {
       const tokens = await this.authService.refreshAccessToken(refreshToken);
       await this.validateAndSetUserInfo(tokens.accessToken, request);
       return true;
     } catch (error) {
-      console.log(error);
+      console.log('Erro ao renovar token:', error);
       throw new HttpException('Session expired, please login again', HttpStatus.UNAUTHORIZED);
     }
   }
